@@ -128,7 +128,10 @@
         document.addEventListener('DOMContentLoaded', () => {
             const teamHtml = TEAM_DATA.map((m, i) => `
                 <div class="team-card reveal" style="transition-delay: ${i * 0.1}s">
-                    <div class="team-img"><i class="fas ${m.icon}"></i></div>
+                    <div class="team-img">
+                        ${m.img ? `<img src="${encodeURI(m.img)}" alt="${m.name}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">` : ''}
+                        <i class="fas ${m.icon}" ${m.img ? 'style="display:none"' : ''}></i>
+                    </div>
                     <div class="team-info">
                         <h3>${m.name}</h3>
                         <p class="role">${m.role}</p>
