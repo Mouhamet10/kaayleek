@@ -1,0 +1,6 @@
+node_modules/
+kaayleek.db
+uploads/
+*.log
+.DS_Store
+start.sh

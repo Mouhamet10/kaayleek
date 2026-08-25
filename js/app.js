@@ -1,0 +1,675 @@
+const NAV_ITEMS = [
+    { label: 'Accueil', href: 'index.html', id: 'accueil' },
+    { label: 'Menu', href: 'menu.html', id: 'menu' },
+    { label: 'À propos', href: 'apropos.html', id: 'apropos' },
+    { label: 'Galerie', href: 'galerie.html', id: 'galerie' },
+    { label: 'Réservation', href: 'reservation.html', id: 'reservation' },
+    { label: 'Contact', href: 'contact.html', id: 'contact' }
+];
+
+let MENU_DATA = [];
+let CART = JSON.parse(localStorage.getItem('kaayleek_cart') || '[]');
+
+function saveCart() {
+    localStorage.setItem('kaayleek_cart', JSON.stringify(CART));
+    renderCartBadge();
+    renderCartSidebar();
+}
+
+function addToCart(item) {
+    const existing = CART.find(c => c.id === item.id);
+    if (existing) {
+        existing.qty++;
+    } else {
+        CART.push({ id: item.id, name: item.name, price: item.priceNum, img: item.img || '', qty: 1 });
+    }
+    saveCart();
+    showToast(item.name + ' ajouté au panier');
+}
+
+function removeFromCart(id) {
+    CART = CART.filter(c => c.id !== id);
+    saveCart();
+}
+
+function changeQty(id, delta) {
+    const item = CART.find(c => c.id === id);
+    if (!item) return;
+    item.qty += delta;
+    if (item.qty <= 0) return removeFromCart(id);
+    saveCart();
+}
+
+function getCartTotal() {
+    return CART.reduce((sum, c) => sum + c.price * c.qty, 0);
+}
+
+function renderCartBadge() {
+    const badge = document.getElementById('cartBadge');
+    if (!badge) return;
+    const count = CART.reduce((s, c) => s + c.qty, 0);
+    badge.textContent = count;
+    badge.style.display = count > 0 ? 'flex' : 'none';
+}
+
+function toggleCart() {
+    const sidebar = document.getElementById('cartSidebar');
+    const overlay = document.getElementById('cartOverlay');
+    if (!sidebar) return;
+    const isOpen = sidebar.classList.contains('open');
+    sidebar.classList.toggle('open');
+    overlay.classList.toggle('active');
+    document.body.style.overflow = isOpen ? '' : 'hidden';
+    renderCartSidebar();
+}
+
+function closeCart() {
+    const sidebar = document.getElementById('cartSidebar');
+    const overlay = document.getElementById('cartOverlay');
+    if (sidebar) sidebar.classList.remove('open');
+    if (overlay) overlay.classList.remove('active');
+    document.body.style.overflow = '';
+}
+
+function renderCartSidebar() {
+    const body = document.getElementById('cartItems');
+    const footer = document.getElementById('cartFooter');
+    if (!body) return;
+
+    if (CART.length === 0) {
+        body.innerHTML = '<div class="cart-empty"><i class="fas fa-shopping-bag"></i><p>Votre panier est vide</p></div>';
+        footer.innerHTML = '';
+        return;
+    }
+
+    body.innerHTML = CART.map(c => {
+        if (!c.img) {
+            const match = MENU_DATA.find(m => m.id === c.id);
+            if (match) c.img = match.img;
+        }
+        return `
+        <div class="cart-item">
+            ${c.img ? `<img src="${c.img}" alt="${c.name}" class="cart-item-img">` : `<div class="cart-item-img cart-item-img-placeholder"><i class="fas fa-utensils"></i></div>`}
+            <div class="cart-item-details">
+                <div class="cart-item-info">
+                    <span class="cart-item-name">${c.name}</span>
+                    <span class="cart-item-price">${c.price.toLocaleString('fr-FR')} FCFA</span>
+                </div>
+                <div class="cart-item-controls">
+                    <button onclick="changeQty(${c.id}, -1)"><i class="fas fa-minus"></i></button>
+                    <span>${c.qty}</span>
+                    <button onclick="changeQty(${c.id}, 1)"><i class="fas fa-plus"></i></button>
+                    <button class="cart-item-remove" onclick="removeFromCart(${c.id})"><i class="fas fa-trash"></i></button>
+                </div>
+            </div>
+        </div>
+    `}).join('');
+
+    const total = getCartTotal();
+    footer.innerHTML = `
+        <div class="cart-total">
+            <span>Total</span>
+            <strong>${total.toLocaleString('fr-FR')} FCFA</strong>
+        </div>
+        <button class="btn btn-primary btn-full" onclick="showOrderModal()">
+            <i class="fas fa-check"></i> Commander
+        </button>
+    `;
+}
+
+function renderCartHTML() {
+    const cart = document.createElement('div');
+    cart.id = 'cartSidebar';
+    cart.className = 'cart-sidebar';
+    cart.innerHTML = `
+        <div class="cart-sidebar-header">
+            <h3><i class="fas fa-shopping-bag"></i> Mon Panier</h3>
+            <button onclick="closeCart()"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="cart-sidebar-body" id="cartItems"></div>
+        <div class="cart-sidebar-footer" id="cartFooter"></div>
+    `;
+    document.body.appendChild(cart);
+
+    const overlay = document.createElement('div');
+    overlay.className = 'cart-overlay';
+    overlay.id = 'cartOverlay';
+    overlay.onclick = closeCart;
+    document.body.appendChild(overlay);
+}
+
+function showOrderModal() {
+    if (CART.length === 0) return showToast('Panier vide');
+    const total = getCartTotal();
+    const overlay = document.createElement('div');
+    overlay.className = 'cart-overlay active';
+    overlay.id = 'orderOverlay';
+    overlay.innerHTML = `
+        <div class="order-modal">
+            <div class="order-modal-header">
+                <h3><i class="fas fa-shopping-bag"></i> Finaliser la commande</h3>
+                <button onclick="closeOrderModal()"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="order-modal-body">
+                <div class="order-summary">
+                    ${CART.map(c => `
+                        <div class="order-summary-item">
+                            <span>${c.name} x${c.qty}</span>
+                            <strong>${(c.price * c.qty).toLocaleString('fr-FR')} FCFA</strong>
+                        </div>
+                    `).join('')}
+                    <div class="order-summary-total">
+                        <span>Total</span>
+                        <strong>${total.toLocaleString('fr-FR')} FCFA</strong>
+                    </div>
+                </div>
+                <form id="orderForm" class="order-form">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Nom complet *</label>
+                            <input type="text" id="orderName" placeholder="Votre nom" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Téléphone *</label>
+                            <input type="tel" id="orderPhone" placeholder="+221 7X XXX XX XX" required>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Email</label>
+                        <input type="email" id="orderEmail" placeholder="votre@email.com">
+                    </div>
+                    <div class="form-group">
+                        <label>Notes / Instructions</label>
+                        <textarea id="orderNotes" rows="2" placeholder="Allergies, préférences..."></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-full" id="orderSubmit">
+                        <i class="fas fa-paper-plane"></i> Confirmer la commande
+                    </button>
+                </form>
+            </div>
+        </div>
+    `;
+    document.body.appendChild(overlay);
+
+    document.getElementById('orderForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const btn = document.getElementById('orderSubmit');
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Envoi...';
+
+        try {
+            const res = await fetch('/api/orders', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    customer_name: document.getElementById('orderName').value,
+                    customer_phone: document.getElementById('orderPhone').value,
+                    customer_email: document.getElementById('orderEmail').value,
+                    items: CART.map(c => ({ id: c.id, name: c.name, price: c.price, qty: c.qty })),
+                    total: total,
+                    notes: document.getElementById('orderNotes').value
+                })
+            });
+            const data = await res.json();
+            if (data.success) {
+                CART = [];
+                saveCart();
+                closeOrderModal();
+                showOrderSuccess(data.id);
+            } else {
+                showToast('Erreur lors de la commande', 'error');
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-paper-plane"></i> Confirmer la commande';
+            }
+        } catch {
+            showToast('Erreur réseau', 'error');
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-paper-plane"></i> Confirmer la commande';
+        }
+    });
+}
+
+function closeOrderModal() {
+    const o = document.getElementById('orderOverlay');
+    if (o) o.remove();
+}
+
+function showOrderSuccess(orderId) {
+    const overlay = document.createElement('div');
+    overlay.className = 'cart-overlay active';
+    overlay.id = 'orderOverlay';
+    overlay.innerHTML = `
+        <div class="order-modal order-success">
+            <div class="order-success-icon">
+                <i class="fas fa-check"></i>
+            </div>
+            <h3>Commande confirmée !</h3>
+            <p>Votre commande <strong>#${orderId}</strong> a été enregistrée.</p>
+            <p style="color:var(--gray-500);font-size:0.9rem">Nous vous contacterons bientôt pour confirmer.</p>
+            <button class="btn btn-primary" onclick="closeOrderModal()" style="margin-top:20px">
+                <i class="fas fa-arrow-left"></i> Retour au menu
+            </button>
+        </div>
+    `;
+    document.body.appendChild(overlay);
+}
+
+const REVIEWS_DATA = [
+    { name: 'Aminata Fall', location: 'Paris, France', initials: 'AF', stars: 5, text: 'Une expérience culinaire exceptionnelle. Le Thiéboudienne est le meilleur que j\'ai goûté hors du Sénégal, et le filet de boeuf rivalise avec les meilleurs parisiens.' },
+    { name: 'Moussa Sow', location: 'Dakar, Sénégal', initials: 'MS', stars: 5, text: 'Le mélange des cuisines est parfaitement maîtrisé. Les saveurs sénégalaises et françaises se complètent à merveille. L\'ambiance est chaleureuse et le service irréprochable.' },
+    { name: 'Sophie Dubois', location: 'Lyon, France', initials: 'SD', stars: 4.5, text: 'Le Baobab Givré en dessert est une pure merveille. Le concept de fusion est réussi et le cadre est magnifique. On y retournera certainement !' },
+    { name: 'Pierre Diallo', location: 'Saint-Louis, Sénégal', initials: 'PD', stars: 5, text: 'J\'ai découvert KaayLeek par hasard et c\'est devenu mon restaurant préféré. Le yassa de poulet est divin et le cocktail au gingembre est addictif !' },
+    { name: 'Fatou Ndiaye', location: 'Thiès, Sénégal', initials: 'FN', stars: 5, text: 'Un cadre magnifique et une cuisine raffinée. Le poisson braisé est exceptionnel et le service toujours au top. Merci KaayLeek !' },
+    { name: 'Jean-Luc Martin', location: 'Marseille, France', initials: 'JM', stars: 5, text: 'Vraiment impressionné par la qualité et l\'originalité des plats. La fusion entre les deux cuisines est un vrai succès. Bravo !' }
+];
+
+const GALLERY_DATA_DEFAULT = [];
+
+const TEAM_DATA = [
+    { name: 'Amadou Diallo', role: 'Chef Principal', desc: 'Formé à Paris et passionné de cuisine sénégalaise, Amadou crée des plats uniques depuis 15 ans.', icon: 'fa-hat-wizard' },
+    { name: 'Marie Lefèvre', role: 'Sous-Chef', desc: 'Spécialiste de la pâtisserie française, Marie apporte son savoir-faire et sa créativité.', icon: 'fa-cookie-bite' },
+    { name: 'Ousmane Fall', role: 'Maître d\'hôtel', desc: 'Ousmane assure un service impeccable et une ambiance chaleureuse pour tous nos clients.', icon: 'fa-concierge-bell' }
+];
+
+// ========== API FETCH ==========
+async function fetchMenuData() {
+    try {
+        const res = await fetch('/api/menu?available=1');
+        const data = await res.json();
+        MENU_DATA = data.map(item => ({
+            id: item.id,
+            name: item.name,
+            price: item.price.toLocaleString('fr-FR') + ' FCFA',
+            priceNum: item.price,
+            desc: item.description,
+            category: item.category,
+            type: item.type,
+            icon: getCategoryIcon(item.category),
+            img: item.image ? encodeURI(item.image) : ''
+        }));
+    } catch {
+        MENU_DATA = [];
+    }
+}
+
+async function fetchGalleryData() {
+    try {
+        const res = await fetch('/api/gallery');
+        const data = await res.json();
+        return data.map(item => ({
+            id: item.id,
+            title: item.title,
+            icon: getCategoryIcon(item.category),
+            category: item.category,
+            img: item.image ? encodeURI(item.image) : ''
+        }));
+    } catch {
+        return GALLERY_DATA_DEFAULT;
+    }
+}
+
+function getCategoryIcon(category) {
+    const icons = {
+        'entrees': 'fa-leaf',
+        'plats-occidentaux': 'fa-utensils',
+        'plats-senegalais': 'fa-fire-burner',
+        'desserts': 'fa-ice-cream',
+        'boissons': 'fa-wine-glass',
+        'plat': 'fa-utensils',
+        'ambiance': 'fa-wine-glass',
+        'equipe': 'fa-users',
+        'cuisine': 'fa-mortar-pestle',
+        'evenement': 'fa-calendar'
+    };
+    return icons[category] || 'fa-image';
+}
+
+// ========== RESERVATION ==========
+async function submitReservation(formData) {
+    const res = await fetch('/api/reservations', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData)
+    });
+    return await res.json();
+}
+
+function getCurrentPage() {
+    const path = window.location.pathname;
+    const file = path.split('/').pop() || 'index.html';
+    return file;
+}
+
+function getBasePath() {
+    const path = window.location.pathname;
+    if (path.includes('/pages/')) return '';
+    return '';
+}
+
+function renderNavbar() {
+    const currentPage = getCurrentPage();
+    const basePath = getBasePath();
+    const isIndex = currentPage === 'index.html' || currentPage === '' || currentPage === '/';
+
+    const nav = document.createElement('nav');
+    nav.className = 'navbar';
+    nav.id = 'navbar';
+
+    nav.innerHTML = `
+        <div class="nav-container">
+            <a href="${basePath}index.html" class="nav-logo">
+                <span class="logo-icon">K</span>
+                <span class="logo-text">KaayLeek</span>
+            </a>
+            <button class="nav-toggle" id="navToggle" aria-label="Menu">
+                <span></span><span></span><span></span>
+            </button>
+            <ul class="nav-menu" id="navMenu">
+                ${NAV_ITEMS.map(item => `
+                    <li>
+                        <a href="${basePath}${item.href}" class="nav-link ${currentPage === item.href ? 'active' : ''}">
+                            ${item.label}
+                        </a>
+                    </li>
+                `).join('')}
+            </ul>
+            <button class="nav-cart" id="navCartBtn" onclick="toggleCart()">
+                <i class="fas fa-shopping-bag"></i>
+                <span class="cart-badge" id="cartBadge">0</span>
+            </button>
+        </div>
+    `;
+
+    document.body.prepend(nav);
+
+    const navToggle = document.getElementById('navToggle');
+    const navMenu = document.getElementById('navMenu');
+    navToggle.addEventListener('click', () => {
+        navMenu.classList.toggle('open');
+        navToggle.classList.toggle('active');
+    });
+
+    navMenu.querySelectorAll('.nav-link').forEach(link => {
+        link.addEventListener('click', (e) => {
+            const href = link.getAttribute('href');
+            if (href && href !== '#' && !href.startsWith('http')) {
+                e.preventDefault();
+                navigateTo(href);
+            }
+            navMenu.classList.remove('open');
+            navToggle.classList.remove('active');
+        });
+    });
+
+    window.addEventListener('scroll', () => {
+        nav.classList.toggle('scrolled', window.scrollY > 50);
+    });
+    window.dispatchEvent(new Event('scroll'));
+}
+
+function renderFooter() {
+    const basePath = getBasePath();
+    const footer = document.createElement('footer');
+    footer.className = 'footer';
+    footer.innerHTML = `
+        <div class="container">
+            <div class="footer-grid">
+                <div class="footer-brand">
+                    <div class="footer-logo">
+                        <span class="logo-icon">K</span>
+                        <span class="logo-text">KaayLeek</span>
+                    </div>
+                    <p>La bonne nourriture à la croisée des saveurs occidentales et sénégalaises.</p>
+                    <div class="footer-socials">
+                        <a href="#" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
+                        <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+                        <a href="#" aria-label="TripAdvisor"><i class="fab fa-tripadvisor"></i></a>
+                        <a href="#" aria-label="WhatsApp"><i class="fab fa-whatsapp"></i></a>
+                    </div>
+                </div>
+                <div class="footer-links">
+                    <h4>Navigation</h4>
+                    <ul>
+                        ${NAV_ITEMS.map(item => `<li><a href="${basePath}${item.href}">${item.label}</a></li>`).join('')}
+                    </ul>
+                </div>
+                <div class="footer-links">
+                    <h4>Services</h4>
+                    <ul>
+                        <li><a href="#">Événements privés</a></li>
+                        <li><a href="#">Service traiteur</a></li>
+                        <li><a href="#">Déjeuner d'affaires</a></li>
+                        <li><a href="#">Cours de cuisine</a></li>
+                        <li><a href="#">Click & Collect</a></li>
+                    </ul>
+                </div>
+                <div class="footer-newsletter">
+                    <h4>Newsletter</h4>
+                    <p>Recevez nos offres et actualités</p>
+                    <form class="newsletter-form" id="newsletterForm">
+                        <input type="email" placeholder="Votre email" required>
+                        <button type="submit"><i class="fas fa-paper-plane"></i></button>
+                    </form>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2026 KaayLeek. Tous droits réservés.</p>
+                <div class="footer-bottom-links">
+                    <a href="#">Mentions légales</a>
+                    <a href="#">Politique de confidentialité</a>
+                </div>
+            </div>
+        </div>
+    `;
+    document.body.appendChild(footer);
+
+    document.getElementById('newsletterForm')?.addEventListener('submit', (e) => {
+        e.preventDefault();
+        showToast('Merci ! Vous êtes inscrit à notre newsletter');
+        e.target.reset();
+    });
+}
+
+function renderTransitionOverlay() {
+    const overlay = document.createElement('div');
+    overlay.className = 'page-transition-overlay';
+    overlay.id = 'pageTransition';
+    for (let i = 0; i < 5; i++) {
+        const bar = document.createElement('div');
+        bar.className = 'bar';
+        bar.style.transitionDelay = `${i * 0.05}s`;
+        overlay.appendChild(bar);
+    }
+    document.body.prepend(overlay);
+}
+
+function navigateTo(url) {
+    const overlay = document.getElementById('pageTransition');
+    overlay.classList.add('active');
+    overlay.classList.remove('out');
+    setTimeout(() => {
+        window.location.href = url;
+    }, 500);
+}
+
+function initPageTransition() {
+    const overlay = document.getElementById('pageTransition');
+    if (!overlay) return;
+    overlay.classList.remove('active');
+    overlay.classList.add('out');
+    setTimeout(() => {
+        overlay.classList.remove('out');
+    }, 600);
+}
+
+function showToast(message) {
+    let toast = document.getElementById('toast');
+    if (!toast) {
+        toast = document.createElement('div');
+        toast.className = 'toast';
+        toast.id = 'toast';
+        toast.innerHTML = `<i class="fas fa-check-circle"></i><span id="toastMessage"></span>`;
+        document.body.appendChild(toast);
+    }
+    document.getElementById('toastMessage').textContent = message;
+    toast.classList.add('show');
+    setTimeout(() => toast.classList.remove('show'), 3500);
+}
+
+function initScrollReveal() {
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('revealed');
+                observer.unobserve(entry.target);
+            }
+        });
+    }, { threshold: 0.1, rootMargin: '0px 0px -50px 0px' });
+
+    document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+}
+
+function renderStars(rating) {
+    let html = '';
+    const full = Math.floor(rating);
+    const half = rating % 1 >= 0.5;
+    for (let i = 0; i < full; i++) html += '<i class="fas fa-star"></i>';
+    if (half) html += '<i class="fas fa-star-half-alt"></i>';
+    for (let i = full + (half ? 1 : 0); i < 5; i++) html += '<i class="far fa-star"></i>';
+    return html;
+}
+
+function renderMenuCards(items, container) {
+    container.innerHTML = items.map((item, i) => `
+        <div class="menu-card reveal" data-category="${item.category}" data-type="${item.type}" style="transition-delay: ${i * 0.05}s">
+            <div class="menu-card-img">
+                ${item.img ? `<img src="${item.img}" alt="${item.name}" class="menu-card-photo" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">` : ''}
+                <div class="menu-img-placeholder" ${item.img ? 'style="display:none"' : ''}><i class="fas ${item.icon}"></i></div>
+                <span class="menu-tag ${item.type}">${item.type === 'senegalais' ? 'Sénégalais' : item.type === 'occidental' ? 'Occidental' : 'Fusion'}</span>
+            </div>
+            <div class="menu-card-content">
+                <div class="menu-card-header">
+                    <h3>${item.name}</h3>
+                    <span class="menu-price">${item.price}</span>
+                </div>
+                <p>${item.desc}</p>
+                <button class="btn-order" onclick='addToCart(${JSON.stringify({id:item.id,name:item.name,priceNum:item.priceNum,img:item.img}).replace(/'/g,"&#39;")})'>
+                    <i class="fas fa-plus"></i> Commander
+                </button>
+            </div>
+        </div>
+    `).join('');
+}
+
+function initMenuFilters(filterSelector, gridSelector) {
+    const filterBtns = document.querySelectorAll(filterSelector);
+    const grid = document.querySelector(gridSelector);
+    if (!filterBtns.length || !grid) return;
+
+    filterBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+            filterBtns.forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            const filter = btn.getAttribute('data-filter');
+            grid.querySelectorAll('.menu-card').forEach(card => {
+                const cat = card.getAttribute('data-category');
+                const show = filter === 'all' || cat === filter;
+                card.classList.toggle('hidden', !show);
+                if (show) {
+                    card.style.animation = 'fadeInUp 0.4s ease both';
+                }
+            });
+        });
+    });
+}
+
+function initMenuSearch(inputSelector, gridSelector) {
+    const input = document.querySelector(inputSelector);
+    const grid = document.querySelector(gridSelector);
+    if (!input || !grid) return;
+
+    input.addEventListener('input', (e) => {
+        const query = e.target.value.toLowerCase().trim();
+        grid.querySelectorAll('.menu-card').forEach(card => {
+            const name = card.querySelector('h3')?.textContent.toLowerCase() || '';
+            const desc = card.querySelector('p')?.textContent.toLowerCase() || '';
+            const match = !query || name.includes(query) || desc.includes(query);
+            card.classList.toggle('hidden', !match);
+        });
+    });
+}
+
+function initGalleryFilters(filterSelector, gridSelector) {
+    const filterBtns = document.querySelectorAll(filterSelector);
+    const grid = document.querySelector(gridSelector);
+    if (!filterBtns.length || !grid) return;
+
+    filterBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+            filterBtns.forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            const filter = btn.getAttribute('data-filter');
+            grid.querySelectorAll('.gallery-item').forEach(item => {
+                const cat = item.getAttribute('data-category');
+                const show = filter === 'all' || cat === filter;
+                item.style.display = show ? '' : 'none';
+            });
+        });
+    });
+}
+
+function initLightbox() {
+    const lightbox = document.createElement('div');
+    lightbox.className = 'lightbox';
+    lightbox.id = 'lightbox';
+    lightbox.innerHTML = `
+        <button class="lightbox-close" id="lightboxClose"><i class="fas fa-times"></i></button>
+        <div class="lightbox-content" id="lightboxContent"></div>
+    `;
+    document.body.appendChild(lightbox);
+
+    document.getElementById('lightboxClose').addEventListener('click', () => {
+        lightbox.classList.remove('active');
+    });
+    lightbox.addEventListener('click', (e) => {
+        if (e.target === lightbox) lightbox.classList.remove('active');
+    });
+}
+
+function openLightbox(title) {
+    const lightbox = document.getElementById('lightbox');
+    const content = document.getElementById('lightboxContent');
+    content.innerHTML = `
+        <div style="font-size:6rem; margin-bottom:24px; color:rgba(255,255,255,0.3);">
+            <i class="fas fa-image"></i>
+        </div>
+        <h2 style="font-family:var(--font-display); font-size:2rem; margin-bottom:12px;">${title}</h2>
+        <p style="color:rgba(255,255,255,0.6);">Photo du restaurant KaayLeek</p>
+    `;
+    lightbox.classList.add('active');
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    renderTransitionOverlay();
+    initPageTransition();
+    renderNavbar();
+    renderFooter();
+    renderCartHTML();
+    initScrollReveal();
+    initLightbox();
+    renderCartBadge();
+
+    setTimeout(() => {
+        document.querySelectorAll('.page-content').forEach(el => el.classList.add('visible'));
+    }, 100);
+
+    document.querySelectorAll('a[href]').forEach(link => {
+        link.addEventListener('click', (e) => {
+            const href = link.getAttribute('href');
+            if (href && !href.startsWith('#') && !href.startsWith('http') && !href.startsWith('mailto:') && !href.startsWith('tel:')) {
+                e.preventDefault();
+                navigateTo(href);
+            }
+        });
+    });
+});

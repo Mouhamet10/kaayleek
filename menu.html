@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Menu — KaayLeek</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/animations.css">
+</head>
+<body>
+    <main class="page-content">
+        <section class="page-hero">
+            <div class="container">
+                <div class="page-hero-content">
+                    <h1>Notre Menu</h1>
+                    <p>Une fusion harmonieuse entre les saveurs d'Occident et les traditions culinaires du Sénégal</p>
+                    <div class="breadcrumb">
+                        <a href="index.html">Accueil</a> <span>/</span> <span>Menu</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="section section-menu">
+            <div class="container">
+                <div class="menu-page-header">
+                    <div class="menu-search">
+                        <i class="fas fa-search"></i>
+                        <input type="text" id="menuSearch" placeholder="Rechercher un plat...">
+                    </div>
+                    <div class="menu-filters" id="menuFilters">
+                        <button class="filter-btn active" data-filter="all">Tout</button>
+                        <button class="filter-btn" data-filter="entrees">Entrées</button>
+                        <button class="filter-btn" data-filter="plats-occidentaux">Plats Occidentaux</button>
+                        <button class="filter-btn" data-filter="plats-senegalais">Plats Sénégalais</button>
+                        <button class="filter-btn" data-filter="desserts">Desserts</button>
+                        <button class="filter-btn" data-filter="boissons">Boissons</button>
+                    </div>
+                </div>
+                <div class="menu-grid" id="menuGrid"></div>
+            </div>
+        </section>
+
+        <section class="section" style="background: var(--cream); text-align: center;">
+            <div class="container">
+                <p class="section-subtitle">Vous avez trouvé votre plat ?</p>
+                <h2 class="section-title" style="margin-bottom: 24px;">Réservez votre table</h2>
+                <a href="reservation.html" class="btn btn-primary">Réserver <i class="fas fa-arrow-right"></i></a>
+            </div>
+        </section>
+    </main>
+
+    <script src="js/app.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            await fetchMenuData();
+            renderMenuCards(MENU_DATA, document.getElementById('menuGrid'));
+            initMenuFilters('#menuFilters .filter-btn', '#menuGrid');
+            initMenuSearch('#menuSearch', '#menuGrid');
+            initScrollReveal();
+        });
+    </script>
+</body>
+</html>

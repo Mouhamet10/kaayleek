@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>À propos — KaayLeek</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/animations.css">
+</head>
+<body>
+    <main class="page-content">
+        <section class="page-hero">
+            <div class="container">
+                <div class="page-hero-content">
+                    <h1>Notre Histoire</h1>
+                    <p>La passion des deux rives depuis 2010</p>
+                    <div class="breadcrumb">
+                        <a href="index.html">Accueil</a> <span>/</span> <span>À propos</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="section section-apropos">
+            <div class="container">
+                <div class="about-grid">
+                    <div class="about-images reveal">
+                        <div class="about-img-main">
+                            <div class="about-img-placeholder">
+                                <i class="fas fa-utensils"></i>
+                                <span>Notre Cuisine</span>
+                            </div>
+                        </div>
+                        <div class="about-img-secondary">
+                            <div class="about-img-placeholder small">
+                                <i class="fas fa-pepper-hot"></i>
+                                <span>Épices</span>
+                            </div>
+                        </div>
+                        <div class="about-stat-card">
+                            <span class="stat-number">15+</span>
+                            <span class="stat-label">Années d'expérience</span>
+                        </div>
+                    </div>
+                    <div class="about-content reveal">
+                        <p class="section-subtitle">Notre Histoire</p>
+                        <h2 class="section-title">La Passion des Deux Rives</h2>
+                        <p class="about-text">
+                            Fondé en 2010, <strong>KaayLeek</strong> — qui signifie "bonne nourriture" en Wolof — est né d'une passion commune pour deux univers culinaires riches et distincts.
+                        </p>
+                        <p class="about-text">
+                            Notre chef, formé entre les étoilés de Paris et les grands maîtres de la cuisine sénégalaise, a voulu créer un lieu où les saveurs du terroir africain rencontrent l'élégance de la gastronomie occidentale.
+                        </p>
+                        <p class="about-text">
+                            Chaque plat est une invitation au voyage, préparé avec des produits frais, soigneusement sélectionnés auprès de nos producteurs locaux et de la mer de Saint-Louis.
+                        </p>
+                        <div class="about-stats">
+                            <div class="about-stat">
+                                <span class="stat-val">200+</span>
+                                <span class="stat-lbl">Plats servis / jour</span>
+                            </div>
+                            <div class="about-stat">
+                                <span class="stat-val">15K+</span>
+                                <span class="stat-lbl">Clients satisfaits</span>
+                            </div>
+                            <div class="about-stat">
+                                <span class="stat-val">4.9</span>
+                                <span class="stat-lbl">Note moyenne</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="section" style="background: var(--white);">
+            <div class="container">
+                <div class="section-header">
+                    <p class="section-subtitle">Nos Valeurs</p>
+                    <h2 class="section-title">Ce qui nous rend uniques</h2>
+                </div>
+                <div class="about-values">
+                    <div class="value-card reveal">
+                        <div class="value-icon"><i class="fas fa-handshake"></i></div>
+                        <h3>Authenticité</h3>
+                        <p>Nous respectons les traditions culinaires des deux rives tout en osant l'innovation. Chaque recette raconte une histoire.</p>
+                    </div>
+                    <div class="value-card reveal">
+                        <div class="value-icon"><i class="fas fa-seedling"></i></div>
+                        <h3>Fraîcheur</h3>
+                        <p>Nous sélectionnons rigoureusement nos ingrédients auprès de producteurs locaux pour garantir une qualité optimale.</p>
+                    </div>
+                    <div class="value-card reveal">
+                        <div class="value-icon"><i class="fas fa-heart"></i></div>
+                        <h3>Passion</h3>
+                        <p>Notre équipe met tout son cœur dans chaque plat, car nous croyons que la cuisine est avant tout un acte d'amour.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="section team-section" style="background: var(--gray-100);">
+            <div class="container">
+                <div class="section-header">
+                    <p class="section-subtitle">L'Équipe</p>
+                    <h2 class="section-title">Les Artisans de Saveurs</h2>
+                </div>
+                <div class="team-grid" id="teamGrid"></div>
+            </div>
+        </section>
+
+        <section class="section" style="background: var(--cream); text-align: center;">
+            <div class="container">
+                <p class="section-subtitle">Envie de nous rencontrer ?</p>
+                <h2 class="section-title" style="margin-bottom: 24px;">Venez nous rendre visite</h2>
+                <a href="contact.html" class="btn btn-primary">Nous Contacter <i class="fas fa-arrow-right"></i></a>
+            </div>
+        </section>
+    </main>
+
+    <script src="js/app.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const teamHtml = TEAM_DATA.map((m, i) => `
+                <div class="team-card reveal" style="transition-delay: ${i * 0.1}s">
+                    <div class="team-img"><i class="fas ${m.icon}"></i></div>
+                    <div class="team-info">
+                        <h3>${m.name}</h3>
+                        <p class="role">${m.role}</p>
+                        <p>${m.desc}</p>
+                    </div>
+                </div>
+            `).join('');
+            document.getElementById('teamGrid').innerHTML = teamHtml;
+            initScrollReveal();
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Galerie — KaayLeek</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/animations.css">
+</head>
+<body>
+    <main class="page-content">
+        <section class="page-hero">
+            <div class="container">
+                <div class="page-hero-content">
+                    <h1>La Galerie</h1>
+                    <p>Instants gourmands capturés chez KaayLeek</p>
+                    <div class="breadcrumb">
+                        <a href="index.html">Accueil</a> <span>/</span> <span>Galerie</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="section section-galerie">
+            <div class="container">
+                <div class="gallery-filters" id="galleryFilters">
+                    <button class="filter-btn active" data-filter="all">Tout</button>
+                    <button class="filter-btn" data-filter="plats">Plats</button>
+                    <button class="filter-btn" data-filter="ambiance">Ambiance</button>
+                    <button class="filter-btn" data-filter="cuisine">Cuisine</button>
+                    <button class="filter-btn" data-filter="desserts">Desserts</button>
+                    <button class="filter-btn" data-filter="boissons">Boissons</button>
+                </div>
+                <div class="gallery-grid" id="galleryGrid"></div>
+            </div>
+        </section>
+
+        <section class="section" style="background: var(--cream); text-align: center;">
+            <div class="container">
+                <p class="section-subtitle">Envie de vivre l'expérience ?</p>
+                <h2 class="section-title" style="margin-bottom: 24px;">Rejoignez-nous chez KaayLeek</h2>
+                <a href="reservation.html" class="btn btn-primary">Réserver une Table <i class="fas fa-arrow-right"></i></a>
+            </div>
+        </section>
+    </main>
+
+    <script src="js/app.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            const galleryData = await fetchGalleryData();
+            const grid = document.getElementById('galleryGrid');
+
+            if (galleryData.length === 0) {
+                grid.innerHTML = '<div style="text-align:center;padding:48px;color:rgba(255,255,255,0.4)"><i class="fas fa-images" style="font-size:2.5rem;margin-bottom:12px;display:block"></i><p>Aucune photo pour le moment. Ajoutez des photos depuis l\'administration.</p></div>';
+                return;
+            }
+
+            grid.innerHTML = galleryData.map((item, i) => `
+                <div class="gallery-item reveal"
+                     data-category="${item.category}"
+                     onclick="openLightbox('${item.title}')"
+                     style="transition-delay: ${i * 0.05}s">
+                    <img src="${item.img}" alt="${item.title}" class="gallery-photo" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+                    <div class="gallery-placeholder" style="display:none"><i class="fas ${item.icon}"></i></div>
+                    <div class="gallery-overlay">
+                        <span>${item.title}</span>
+                    </div>
+                </div>
+            `).join('');
+
+            initGalleryFilters('#galleryFilters .filter-btn', '#galleryGrid');
+            initScrollReveal();
+        });
+    </script>
+</body>
+</html>
