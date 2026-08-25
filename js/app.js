@@ -268,7 +268,7 @@ const GALLERY_DATA_DEFAULT = [];
 const TEAM_DATA = [
     { name: 'Amadou Diallo', role: 'Chef Principal', desc: 'Formé à Paris et passionné de cuisine sénégalaise, Amadou crée des plats uniques depuis 15 ans.', icon: 'fa-hat-wizard', img: 'images/chef principal.jpg' },
     { name: 'Marie Lefèvre', role: 'Sous-Chef', desc: 'Spécialiste de la pâtisserie française, Marie apporte son savoir-faire et sa créativité.', icon: 'fa-cookie-bite', img: 'images/sous chef.jpg' },
-    { name: 'Ousmane Fall', role: 'Maître d\'hôtel', desc: 'Ousmane assure un service impeccable et une ambiance chaleureuse pour tous nos clients.', icon: 'fa-concierge-bell', img: '' }
+    { name: 'Ousmane Fall', role: 'Maître d\'hôtel', desc: 'Ousmane assure un service impeccable et une ambiance chaleureuse pour tous nos clients.', icon: 'fa-concierge-bell', img: "images/maitre d'hotel.jpg" }
 ];
 
 // ========== API FETCH ==========
