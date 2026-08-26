@@ -391,10 +391,15 @@ function renderNavbar() {
                     </li>
                 `).join('')}
             </ul>
-            <button class="nav-cart" id="navCartBtn" onclick="toggleCart()">
-                <i class="fas fa-shopping-bag"></i>
-                <span class="cart-badge" id="cartBadge">0</span>
-            </button>
+            <div class="nav-actions">
+                <button class="nav-search" id="navSearchBtn" onclick="openSearch()" aria-label="Rechercher">
+                    <i class="fas fa-search"></i>
+                </button>
+                <button class="nav-cart" id="navCartBtn" onclick="toggleCart()">
+                    <i class="fas fa-shopping-bag"></i>
+                    <span class="cart-badge" id="cartBadge">0</span>
+                </button>
+            </div>
         </div>
     `;
 
@@ -498,6 +503,72 @@ function renderFooter() {
     window.addEventListener('scroll', () => {
         scrollTopBtn.classList.toggle('visible', window.scrollY > 400);
     });
+}
+
+function renderSearchModal() {
+    const modal = document.createElement('div');
+    modal.className = 'search-modal';
+    modal.id = 'searchModal';
+    modal.innerHTML = `
+        <div class="search-overlay" onclick="closeSearch()"></div>
+        <div class="search-dialog">
+            <div class="search-input-wrap">
+                <i class="fas fa-search"></i>
+                <input type="text" id="searchInput" placeholder="Rechercher un plat, une boisson..." autocomplete="off">
+                <kbd>Échap</kbd>
+            </div>
+            <div class="search-results" id="searchResults">
+                <p class="search-hint"><i class="fas fa-utensils"></i> Tapez pour rechercher dans notre menu</p>
+            </div>
+        </div>
+    `;
+    document.body.appendChild(modal);
+
+    document.getElementById('searchInput').addEventListener('input', (e) => {
+        const q = e.target.value.trim().toLowerCase();
+        const resultsEl = document.getElementById('searchResults');
+        if (!q) {
+            resultsEl.innerHTML = '<p class="search-hint"><i class="fas fa-utensils"></i> Tapez pour rechercher dans notre menu</p>';
+            return;
+        }
+        const matches = MENU_DATA.filter(item =>
+            item.name.toLowerCase().includes(q) ||
+            item.desc.toLowerCase().includes(q) ||
+            item.type.toLowerCase().includes(q) ||
+            item.category.toLowerCase().includes(q)
+        );
+        if (!matches.length) {
+            resultsEl.innerHTML = '<p class="search-hint"><i class="fas fa-frown"></i> Aucun résultat pour "' + sanitizeHTML(q) + '"</p>';
+            return;
+        }
+        resultsEl.innerHTML = matches.map(item => `
+            <div class="search-result-item" onclick="closeSearch(); window.location.href='${getBasePath()}menu.html'">
+                <div class="search-result-img">
+                    ${item.img ? `<img src="${item.img}" alt="${item.name}" onerror="this.style.display='none'">` : `<i class="fas ${item.icon}"></i>`}
+                </div>
+                <div class="search-result-info">
+                    <strong>${item.name}</strong>
+                    <span>${item.desc}</span>
+                </div>
+                <span class="search-result-price">${item.price}</span>
+            </div>
+        `).join('');
+    });
+}
+
+function openSearch() {
+    const modal = document.getElementById('searchModal');
+    modal.classList.add('open');
+    document.body.style.overflow = 'hidden';
+    setTimeout(() => document.getElementById('searchInput').focus(), 100);
+}
+
+function closeSearch() {
+    const modal = document.getElementById('searchModal');
+    modal.classList.remove('open');
+    document.body.style.overflow = '';
+    document.getElementById('searchInput').value = '';
+    document.getElementById('searchResults').innerHTML = '<p class="search-hint"><i class="fas fa-utensils"></i> Tapez pour rechercher dans notre menu</p>';
 }
 
 function renderTransitionOverlay() {
@@ -697,10 +768,16 @@ document.addEventListener('DOMContentLoaded', () => {
     initPageTransition();
     renderNavbar();
     renderFooter();
+    renderSearchModal();
     renderCartHTML();
     initScrollReveal();
     initLightbox();
     renderCartBadge();
+
+    document.addEventListener('keydown', (e) => {
+        if ((e.ctrlKey || e.metaKey) && e.key === 'k') { e.preventDefault(); openSearch(); }
+        if (e.key === 'Escape') closeSearch();
+    });
 
     setTimeout(() => {
         document.querySelectorAll('.page-content').forEach(el => el.classList.add('visible'));
