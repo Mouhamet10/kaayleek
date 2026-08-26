@@ -1,3 +1,18 @@
+function sanitizeHTML(str) {
+    const div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
+}
+
+function isRestaurantOpen() {
+    const now = new Date();
+    const day = now.getDay();
+    const hour = now.getHours();
+    if (day === 1) return false;
+    if (day === 0 || day === 6) return hour >= 11 && hour < 24;
+    return hour >= 12 && hour < 23;
+}
+
 const NAV_ITEMS = [
     { label: 'Accueil', href: 'index.html', id: 'accueil' },
     { label: 'Menu', href: 'menu.html', id: 'menu' },
@@ -87,19 +102,21 @@ function renderCartSidebar() {
             const match = MENU_DATA.find(m => m.id === c.id);
             if (match) c.img = match.img;
         }
+        const safeImg = c.img ? encodeURI(c.img) : '';
+        const safeName = c.name.replace(/"/g, '&quot;').replace(/'/g, '&#39;');
         return `
         <div class="cart-item">
-            ${c.img ? `<img src="${c.img}" alt="${c.name}" class="cart-item-img">` : `<div class="cart-item-img cart-item-img-placeholder"><i class="fas fa-utensils"></i></div>`}
+            ${safeImg ? `<img src="${safeImg}" alt="${safeName}" class="cart-item-img">` : `<div class="cart-item-img cart-item-img-placeholder"><i class="fas fa-utensils"></i></div>`}
             <div class="cart-item-details">
                 <div class="cart-item-info">
-                    <span class="cart-item-name">${c.name}</span>
+                    <span class="cart-item-name">${safeName}</span>
                     <span class="cart-item-price">${c.price.toLocaleString('fr-FR')} FCFA</span>
                 </div>
                 <div class="cart-item-controls">
-                    <button onclick="changeQty(${c.id}, -1)"><i class="fas fa-minus"></i></button>
-                    <span>${c.qty}</span>
-                    <button onclick="changeQty(${c.id}, 1)"><i class="fas fa-plus"></i></button>
-                    <button class="cart-item-remove" onclick="removeFromCart(${c.id})"><i class="fas fa-trash"></i></button>
+                    <button onclick="changeQty(${parseInt(c.id)}, -1)"><i class="fas fa-minus"></i></button>
+                    <span>${parseInt(c.qty) || 1}</span>
+                    <button onclick="changeQty(${parseInt(c.id)}, 1)"><i class="fas fa-plus"></i></button>
+                    <button class="cart-item-remove" onclick="removeFromCart(${parseInt(c.id)})"><i class="fas fa-trash"></i></button>
                 </div>
             </div>
         </div>
@@ -255,12 +272,12 @@ function showOrderSuccess(orderId) {
 }
 
 const REVIEWS_DATA = [
-    { name: 'Aminata Fall', location: 'Paris, France', initials: 'AF', stars: 5, text: 'Une expérience culinaire exceptionnelle. Le Thiéboudienne est le meilleur que j\'ai goûté hors du Sénégal, et le filet de boeuf rivalise avec les meilleurs parisiens.' },
-    { name: 'Moussa Sow', location: 'Dakar, Sénégal', initials: 'MS', stars: 5, text: 'Le mélange des cuisines est parfaitement maîtrisé. Les saveurs sénégalaises et françaises se complètent à merveille. L\'ambiance est chaleureuse et le service irréprochable.' },
-    { name: 'Sophie Dubois', location: 'Lyon, France', initials: 'SD', stars: 4.5, text: 'Le Baobab Givré en dessert est une pure merveille. Le concept de fusion est réussi et le cadre est magnifique. On y retournera certainement !' },
-    { name: 'Pierre Diallo', location: 'Saint-Louis, Sénégal', initials: 'PD', stars: 5, text: 'J\'ai découvert KaayLeek par hasard et c\'est devenu mon restaurant préféré. Le yassa de poulet est divin et le cocktail au gingembre est addictif !' },
-    { name: 'Fatou Ndiaye', location: 'Thiès, Sénégal', initials: 'FN', stars: 5, text: 'Un cadre magnifique et une cuisine raffinée. Le poisson braisé est exceptionnel et le service toujours au top. Merci KaayLeek !' },
-    { name: 'Jean-Luc Martin', location: 'Marseille, France', initials: 'JM', stars: 5, text: 'Vraiment impressionné par la qualité et l\'originalité des plats. La fusion entre les deux cuisines est un vrai succès. Bravo !' }
+    { name: 'Aminata Fall', location: 'Paris, France', initials: 'AF', stars: 5, text: 'En tant que Sénégalaise vivant à Paris, je cherchais un endroit qui me rappelle les saveurs de chez moi. Le Thiéboudienne de KaayLeek m\'a fait pleurer de joie — c\'est exactement comme au pays, avec une touche française qui sublime le tout. Un vrai coup de cœur.' },
+    { name: 'Moussa Sow', location: 'Dakar, Sénégal', initials: 'MS', stars: 5, text: 'J\'y vais au moins deux fois par mois avec ma famille. Les enfants adorent les brochettes et moi je suis fan du mafé. Le personnel nous accueille toujours avec le sourire, on se sent comme à la maison.' },
+    { name: 'Sophie Dubois', location: 'Lyon, France', initials: 'SD', stars: 4, text: 'Découverte lors d\'un voyage au Sénégal et je ne m\'y attendais pas du tout ! Le concept de fusion est vraiment original. Le Baobab Givré est incroyable — un dessert qu\'on ne trouve nulle part ailleurs. Je recommande vivement.' },
+    { name: 'Ibrahima Diop', location: 'Dakar, Sénégal', initials: 'ID', stars: 5, text: 'J\'ai organisé l\'anniversaire de ma femme ici et c\'était parfait. Le chef a préparé un menu sur mesure, le service était aux petits soins. Tout le monde était conquis, même ma belle-mère !' },
+    { name: 'Marie-Claire Baptiste', location: 'Bordeaux, France', initials: 'MB', stars: 5, text: 'Ce qui m\'a surpris, c\'est la fraîcheur des ingrédients. On sent que tout est fait maison, avec passion. Le poisson braisé avec le thiakry est une combinaison que je n\'aurais jamais imaginée et qui fonctionne à merveille.' },
+    { name: 'Abdoulaye Ndiaye', location: 'Thiès, Sénégal', initials: 'AN', stars: 4.5, text: 'Un restaurant qui manquait à Dakar. Enfin un endroit où l\'on peut manger sénégalais dans un cadre moderne sans que ça perde en authenticité. Le cocktail au gingembre est mon préféré, je recommande à tous mes amis.' }
 ];
 
 const GALLERY_DATA_DEFAULT = [];
@@ -285,7 +302,8 @@ async function fetchMenuData() {
             category: item.category,
             type: item.type,
             icon: getCategoryIcon(item.category),
-            img: item.image ? encodeURI(item.image) : ''
+            img: item.image ? encodeURI(item.image) : '',
+            allergens: item.allergens || ''
         }));
     } catch {
         MENU_DATA = [];
@@ -421,10 +439,9 @@ function renderFooter() {
                     </div>
                     <p>La bonne nourriture à la croisée des saveurs occidentales et sénégalaises.</p>
                     <div class="footer-socials">
-                        <a href="#" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
-                        <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
-                        <a href="#" aria-label="TripAdvisor"><i class="fab fa-tripadvisor"></i></a>
-                        <a href="#" aria-label="WhatsApp"><i class="fab fa-whatsapp"></i></a>
+                        <a href="https://www.facebook.com/kaayleek" target="_blank" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
+                        <a href="https://www.instagram.com/kaayleek" target="_blank" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+                        <a href="https://wa.me/221762967919" target="_blank" aria-label="WhatsApp"><i class="fab fa-whatsapp"></i></a>
                     </div>
                 </div>
                 <div class="footer-links">
@@ -436,11 +453,10 @@ function renderFooter() {
                 <div class="footer-links">
                     <h4>Services</h4>
                     <ul>
-                        <li><a href="#">Événements privés</a></li>
-                        <li><a href="#">Service traiteur</a></li>
-                        <li><a href="#">Déjeuner d'affaires</a></li>
-                        <li><a href="#">Cours de cuisine</a></li>
-                        <li><a href="#">Click & Collect</a></li>
+                        <li><a href="reservation.html">Réservation</a></li>
+                        <li><a href="contact.html?subject=traiteur">Service traiteur</a></li>
+                        <li><a href="menu.html">Click & Collect</a></li>
+                        <li><a href="contact.html">Nous contacter</a></li>
                     </ul>
                 </div>
                 <div class="footer-newsletter">
@@ -455,18 +471,32 @@ function renderFooter() {
             <div class="footer-bottom">
                 <p>&copy; 2026 KaayLeek. Tous droits réservés.</p>
                 <div class="footer-bottom-links">
-                    <a href="#">Mentions légales</a>
-                    <a href="#">Politique de confidentialité</a>
+                    <a href="contact.html">Contact</a>
+                    <a href="reservation.html">Réservation</a>
                 </div>
             </div>
         </div>
     `;
     document.body.appendChild(footer);
 
-    document.getElementById('newsletterForm')?.addEventListener('submit', (e) => {
+    document.getElementById('newsletterForm')?.addEventListener('submit', async (e) => {
         e.preventDefault();
-        showToast('Merci ! Vous êtes inscrit à notre newsletter');
-        e.target.reset();
+        const email = e.target.querySelector('input').value;
+        try {
+            await fetch('/api/newsletter', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ email }) });
+            showToast('Merci ! Vous êtes inscrit à notre newsletter');
+            e.target.reset();
+        } catch { showToast('Erreur, réessayez.', 'error'); }
+    });
+
+    const scrollTopBtn = document.createElement('button');
+    scrollTopBtn.id = 'scrollTopBtn';
+    scrollTopBtn.innerHTML = '<i class="fas fa-arrow-up"></i>';
+    scrollTopBtn.className = 'scroll-top-btn';
+    scrollTopBtn.onclick = () => window.scrollTo({ top: 0, behavior: 'smooth' });
+    document.body.appendChild(scrollTopBtn);
+    window.addEventListener('scroll', () => {
+        scrollTopBtn.classList.toggle('visible', window.scrollY > 400);
     });
 }
 
@@ -502,15 +532,17 @@ function initPageTransition() {
     }, 600);
 }
 
-function showToast(message) {
+function showToast(message, type) {
     let toast = document.getElementById('toast');
     if (!toast) {
         toast = document.createElement('div');
         toast.className = 'toast';
         toast.id = 'toast';
-        toast.innerHTML = `<i class="fas fa-check-circle"></i><span id="toastMessage"></span>`;
         document.body.appendChild(toast);
     }
+    const icon = type === 'error' ? 'fa-times-circle' : type === 'warning' ? 'fa-exclamation-circle' : 'fa-check-circle';
+    const color = type === 'error' ? '#dc3545' : type === 'warning' ? '#ffc107' : '#28a745';
+    toast.innerHTML = `<i class="fas ${icon}" style="color:${color}"></i><span id="toastMessage"></span>`;
     document.getElementById('toastMessage').textContent = message;
     toast.classList.add('show');
     setTimeout(() => toast.classList.remove('show'), 3500);
@@ -553,12 +585,24 @@ function renderMenuCards(items, container) {
                     <span class="menu-price">${item.price}</span>
                 </div>
                 <p>${item.desc}</p>
-                <button class="btn-order" onclick='addToCart(${JSON.stringify({id:item.id,name:item.name,priceNum:item.priceNum,img:item.img}).replace(/'/g,"&#39;")})'>
+                ${item.allergens ? `<div class="allergen-badges">${item.allergens.split(',').map(a => `<span class="allergen-badge" title="${a.trim()}">${a.trim()}</span>`).join('')}</div>` : ''}
+                <button class="btn-order" data-id="${item.id}" data-name="${item.name}" data-price="${item.priceNum}" data-img="${item.img || ''}">
                     <i class="fas fa-plus"></i> Commander
                 </button>
             </div>
         </div>
     `).join('');
+
+    container.querySelectorAll('.btn-order').forEach(btn => {
+        btn.addEventListener('click', () => {
+            addToCart({
+                id: parseInt(btn.dataset.id),
+                name: btn.dataset.name,
+                priceNum: parseInt(btn.dataset.price),
+                img: btn.dataset.img
+            });
+        });
+    });
 }
 
 function initMenuFilters(filterSelector, gridSelector) {
@@ -636,16 +680,15 @@ function initLightbox() {
     });
 }
 
-function openLightbox(title) {
+function openLightbox(title, imgSrc) {
     const lightbox = document.getElementById('lightbox');
     const content = document.getElementById('lightboxContent');
-    content.innerHTML = `
-        <div style="font-size:6rem; margin-bottom:24px; color:rgba(255,255,255,0.3);">
-            <i class="fas fa-image"></i>
-        </div>
-        <h2 style="font-family:var(--font-display); font-size:2rem; margin-bottom:12px;">${title}</h2>
-        <p style="color:rgba(255,255,255,0.6);">Photo du restaurant KaayLeek</p>
-    `;
+    content.innerHTML = imgSrc
+        ? `<img src="${imgSrc}" alt="${title}" style="max-width:90vw; max-height:80vh; border-radius:12px; object-fit:contain;">
+           <h2 style="font-family:var(--font-display); font-size:1.5rem; margin-top:16px; color:#fff;">${title}</h2>`
+        : `<div style="font-size:6rem; margin-bottom:24px; color:rgba(255,255,255,0.3);"><i class="fas fa-image"></i></div>
+           <h2 style="font-family:var(--font-display); font-size:2rem; margin-bottom:12px; color:#fff;">${title}</h2>
+           <p style="color:rgba(255,255,255,0.6);">Photo du restaurant KaayLeek</p>`;
     lightbox.classList.add('active');
 }
 

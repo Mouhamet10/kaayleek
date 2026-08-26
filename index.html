@@ -4,6 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>KaayLeek — Cuisine Occidentale & Sénégalaise</title>
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <meta name="description" content="KaayLeek - Restaurant fusion occidentale et sénégalaise à Dakar. Cuisine fine, produits frais, cadre élégant.">
+    <meta property="og:title" content="KaayLeek — Cuisine Occidentale & Sénégalaise">
+    <meta property="og:description" content="L'art de la table à la croisée des saveurs.">
+    <meta property="og:image" content="images/resto.jpg">
+    <meta property="og:type" content="website">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
@@ -26,7 +32,7 @@
                 <div class="hero-badges">
                     <span class="badge"><i class="fas fa-star"></i> 4.9/5</span>
                     <span class="badge"><i class="fas fa-utensils"></i> Fusion Unique</span>
-                    <span class="badge"><i class="fas fa-clock"></i> Ouvert maintenant</span>
+                    <span class="badge" id="heroStatus"><i class="fas fa-clock"></i> Ouvert maintenant</span>
                 </div>
             </div>
             <div class="hero-scroll">
@@ -179,6 +185,14 @@
                 </div>
             `).join('');
             document.getElementById('homeReviewsGrid').innerHTML = reviewsHtml;
+            const heroStatus = document.getElementById('heroStatus');
+            if (heroStatus) {
+                const open = isRestaurantOpen();
+                heroStatus.innerHTML = open
+                    ? '<i class="fas fa-clock"></i> Ouvert maintenant'
+                    : '<i class="fas fa-clock"></i> Fermé actuellement';
+                heroStatus.classList.add(open ? 'hero-status-open' : 'hero-status-closed');
+            }
             initScrollReveal();
         });
     </script>

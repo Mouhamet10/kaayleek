@@ -430,6 +430,20 @@
     let currentPage = 'dashboard';
     let stats = {};
 
+    function esc(str) {
+        const d = document.createElement('div');
+        d.textContent = str || '';
+        return d.innerHTML;
+    }
+
+    function escAttr(str) {
+        return (str || '').replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/'/g, '&#39;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    }
+
+    function escJS(str) {
+        return (str || '').replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/"/g, '\\"').replace(/\n/g, '\\n').replace(/\r/g, '\\r');
+    }
+
     // ========== AUTH ==========
     async function checkAuth() {
         try {
@@ -541,13 +555,13 @@
                         ${items.length === 0 ? '<tr><td colspan="5"><div class="empty-state"><i class="fas fa-utensils"></i><p>Aucun plat</p></div></td></tr>' : ''}
                         ${items.map(i => `
                             <tr>
-                                <td><strong>${i.name}</strong></td>
-                                <td>${i.category}</td>
+                                <td><strong>${esc(i.name)}</strong></td>
+                                <td>${esc(i.category)}</td>
                                 <td><strong>${i.price.toLocaleString()} FCFA</strong></td>
                                 <td>${i.available ? '<span class="badge-status badge-confirmed">Disponible</span>' : '<span class="badge-status badge-cancelled">Indisponible</span>'}</td>
                                 <td>
-                                    <button class="btn btn-ghost btn-sm" onclick='showMenuModal(${JSON.stringify(i).replace(/'/g,"\\'")})'><i class="fas fa-edit"></i></button>
-                                    <button class="btn btn-danger btn-sm" onclick="deleteMenu(${i.id})"><i class="fas fa-trash"></i></button>
+                                    <button class="btn btn-ghost btn-sm btn-edit-menu" data-item='${escAttr(JSON.stringify(i))}'><i class="fas fa-edit"></i></button>
+                                    <button class="btn btn-danger btn-sm btn-delete-menu" data-id="${i.id}"><i class="fas fa-trash"></i></button>
                                 </td>
                             </tr>
                         `).join('')}
@@ -561,8 +575,8 @@
         openModal(`
             <h3>${item ? 'Modifier' : 'Ajouter'} un plat</h3>
             <form id="menuForm" enctype="multipart/form-data">
-                <div class="form-group"><label>Nom</label><input name="name" value="${item?.name||''}" required></div>
-                <div class="form-group"><label>Description</label><textarea name="description">${item?.description||''}</textarea></div>
+                <div class="form-group"><label>Nom</label><input name="name" value="${esc(item?.name||'')}" required></div>
+                <div class="form-group"><label>Description</label><textarea name="description">${esc(item?.description||'')}</textarea></div>
                 <div class="form-group"><label>Prix (FCFA)</label><input type="number" name="price" value="${item?.price||''}" required></div>
                 <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
                     <div class="form-group"><label>Catégorie</label>
@@ -583,6 +597,7 @@
                     </div>
                 </div>
                 <div class="form-group"><label>Image</label><input type="file" name="image" accept="image/*"></div>
+                <div class="form-group"><label>Allergènes (séparés par virgules)</label><input name="allergens" value="${esc(item?.allergens||'')}" placeholder="ex: Gluten, Lait, Fruits à coque"></div>
                 ${item ? `<div class="form-group"><label><input type="checkbox" name="available" value="1" ${item.available?'checked':''}> Disponible</label></div>` : ''}
                 <div class="modal-actions">
                     <button type="button" class="btn btn-ghost" onclick="closeModal()">Annuler</button>
@@ -595,7 +610,8 @@
             const fd = new FormData(e.target);
             if (!fd.has('available')) fd.append('available', '0');
             const url = item ? `/api/menu/${item.id}` : '/api/menu';
-            const res = await fetch(url, { method: 'POST', body: fd });
+            const method = item ? 'PUT' : 'POST';
+            const res = await fetch(url, { method, body: fd });
             const data = await res.json();
             if (data.success) { closeModal(); toast(item ? 'Plat modifié' : 'Plat ajouté'); renderPage('menu'); }
             else toast(data.error || 'Erreur', 'error');
@@ -608,6 +624,79 @@
         const data = await res.json();
         if (data.success) { toast('Plat supprimé'); renderPage('menu'); }
     }
+
+    // Event delegation for menu buttons
+    document.addEventListener('click', (e) => {
+        const editBtn = e.target.closest('.btn-edit-menu');
+        if (editBtn) {
+            try {
+                const item = JSON.parse(editBtn.dataset.item);
+                showMenuModal(item);
+            } catch {}
+        }
+        const deleteBtn = e.target.closest('.btn-delete-menu');
+        if (deleteBtn) {
+            deleteMenu(parseInt(deleteBtn.dataset.id));
+        }
+        const confirmResBtn = e.target.closest('.btn-confirm-res');
+        if (confirmResBtn) {
+            updateReservation(
+                parseInt(confirmResBtn.dataset.id), 'confirmed',
+                confirmResBtn.dataset.phone, confirmResBtn.dataset.name,
+                confirmResBtn.dataset.date, confirmResBtn.dataset.time,
+                parseInt(confirmResBtn.dataset.guests)
+            );
+        }
+        const cancelResBtn = e.target.closest('.btn-cancel-res');
+        if (cancelResBtn) {
+            updateReservation(
+                parseInt(cancelResBtn.dataset.id), 'cancelled',
+                cancelResBtn.dataset.phone, cancelResBtn.dataset.name,
+                cancelResBtn.dataset.date, cancelResBtn.dataset.time,
+                parseInt(cancelResBtn.dataset.guests)
+            );
+        }
+        const confirmOrdBtn = e.target.closest('.btn-confirm-ord');
+        if (confirmOrdBtn) {
+            updateOrder(
+                parseInt(confirmOrdBtn.dataset.id), 'confirmed',
+                confirmOrdBtn.dataset.phone, confirmOrdBtn.dataset.items,
+                parseInt(confirmOrdBtn.dataset.total), confirmOrdBtn.dataset.name
+            );
+        }
+        const cancelOrdBtn = e.target.closest('.btn-cancel-ord');
+        if (cancelOrdBtn) {
+            updateOrder(
+                parseInt(cancelOrdBtn.dataset.id), 'cancelled',
+                cancelOrdBtn.dataset.phone, cancelOrdBtn.dataset.items,
+                parseInt(cancelOrdBtn.dataset.total), cancelOrdBtn.dataset.name
+            );
+        }
+        const completeOrdBtn = e.target.closest('.btn-complete-ord');
+        if (completeOrdBtn) {
+            updateOrder(
+                parseInt(completeOrdBtn.dataset.id), 'completed',
+                completeOrdBtn.dataset.phone, completeOrdBtn.dataset.items,
+                parseInt(completeOrdBtn.dataset.total), completeOrdBtn.dataset.name
+            );
+        }
+        const deleteResBtn = e.target.closest('.btn-delete-res');
+        if (deleteResBtn) {
+            deleteReservation(parseInt(deleteResBtn.dataset.id));
+        }
+        const deleteOrdBtn = e.target.closest('.btn-delete-ord');
+        if (deleteOrdBtn) {
+            deleteOrder(parseInt(deleteOrdBtn.dataset.id));
+        }
+        const deleteGalBtn = e.target.closest('.btn-delete-gal');
+        if (deleteGalBtn) {
+            deleteGallery(parseInt(deleteGalBtn.dataset.id));
+        }
+        const deleteConBtn = e.target.closest('.btn-delete-con');
+        if (deleteConBtn) {
+            deleteContact(parseInt(deleteConBtn.dataset.id));
+        }
+    });
 
     // ========== RESERVATIONS ==========
     async function renderReservations(el) {
@@ -625,20 +714,20 @@
                             const phone = rawPhone.startsWith('221') ? rawPhone : '221' + rawPhone;
                             return `
                             <tr>
-                                <td><strong>${i.name}</strong><br><small style="color:rgba(255,255,255,0.4)">${i.phone}</small></td>
-                                <td>${i.date}</td>
-                                <td>${i.time}</td>
+                                <td><strong>${esc(i.name)}</strong><br><small style="color:rgba(255,255,255,0.4)">${esc(i.phone)}</small></td>
+                                <td>${esc(i.date)}</td>
+                                <td>${esc(i.time)}</td>
                                 <td>${i.guests}</td>
-                                <td>${i.occasion || '-'}</td>
-                                <td><span class="badge-status badge-${i.status}">${i.status === 'pending' ? 'En attente' : i.status === 'confirmed' ? 'Confirmée' : i.status === 'cancelled' ? 'Annulée' : i.status}</span></td>
+                                <td>${esc(i.occasion || '-')}</td>
+                                <td><span class="badge-status badge-${esc(i.status)}">${i.status === 'pending' ? 'En attente' : i.status === 'confirmed' ? 'Confirmée' : i.status === 'cancelled' ? 'Annulée' : esc(i.status)}</span></td>
                                 <td>
                                     <div class="action-group">
                                         ${i.status === 'pending' ? `
-                                            <button class="btn btn-success btn-sm" onclick="updateReservation(${i.id},'confirmed',${JSON.stringify(phone)},${JSON.stringify(i.name)},'${i.date}','${i.time}',${i.guests})"><i class="fas fa-check"></i></button>
-                                            <button class="btn btn-danger btn-sm" onclick="updateReservation(${i.id},'cancelled',${JSON.stringify(phone)},${JSON.stringify(i.name)},'${i.date}','${i.time}',${i.guests})"><i class="fas fa-times"></i></button>
+                                            <button class="btn btn-success btn-sm btn-confirm-res" data-id="${i.id}" data-phone="${escAttr(phone)}" data-name="${escAttr(i.name)}" data-date="${escAttr(i.date)}" data-time="${escAttr(i.time)}" data-guests="${i.guests}"><i class="fas fa-check"></i></button>
+                                            <button class="btn btn-danger btn-sm btn-cancel-res" data-id="${i.id}" data-phone="${escAttr(phone)}" data-name="${escAttr(i.name)}" data-date="${escAttr(i.date)}" data-time="${escAttr(i.time)}" data-guests="${i.guests}"><i class="fas fa-times"></i></button>
                                         ` : ''}
-                                        ${phone ? `<a href="https://wa.me/${phone}?text=${encodeURIComponent('Bonjour ' + i.name + ' ! Concernant votre réservation du ' + i.date + ' à ' + i.time + ' pour ' + i.guests + ' convive(s)' + (i.occasion ? ' (' + i.occasion + ')' : '') + ' :\n\nKaayLeek 🍽️\n📞 +221 76 296 79 19')} " target="_blank" class="btn-whatsapp" title="Envoyer un message WhatsApp"><i class="fab fa-whatsapp"></i></a>` : ''}
-                                        <button class="btn btn-danger btn-sm" onclick="deleteReservation(${i.id})"><i class="fas fa-trash"></i></button>
+                                        ${phone ? `<a href="https://wa.me/${escAttr(phone)}?text=${encodeURIComponent('Bonjour ' + i.name + ' ! Concernant votre réservation du ' + i.date + ' à ' + i.time + ' pour ' + i.guests + ' convive(s)' + (i.occasion ? ' (' + i.occasion + ')' : '') + ' :\n\nKaayLeek 🍽️\n📞 +221 76 296 79 19')} " target="_blank" class="btn-whatsapp" title="Envoyer un message WhatsApp"><i class="fab fa-whatsapp"></i></a>` : ''}
+                                        <button class="btn btn-danger btn-sm btn-delete-res" data-id="${i.id}"><i class="fas fa-trash"></i></button>
                                     </div>
                                 </td>
                             </tr>`;
@@ -685,12 +774,12 @@
                     ${items.length === 0 ? '<div class="empty-state" style="grid-column:1/-1"><i class="fas fa-images"></i><p>Aucune photo</p></div>' : ''}
                     ${items.map(i => `
                         <div style="position:relative;border-radius:12px;overflow:hidden;border:1px solid rgba(255,255,255,0.06)">
-                            <img src="${i.image}" alt="${i.title}" style="width:100%;height:160px;object-fit:cover">
+                            <img src="${esc(i.image)}" alt="${esc(i.title)}" style="width:100%;height:160px;object-fit:cover">
                             <div style="padding:10px">
-                                <div style="font-size:0.85rem;font-weight:600">${i.title}</div>
-                                <div style="font-size:0.75rem;color:rgba(255,255,255,0.4)">${i.category}</div>
+                                <div style="font-size:0.85rem;font-weight:600">${esc(i.title)}</div>
+                                <div style="font-size:0.75rem;color:rgba(255,255,255,0.4)">${esc(i.category)}</div>
                             </div>
-                            <button onclick="deleteGallery(${i.id})" style="position:absolute;top:8px;right:8px;background:rgba(0,0,0,0.7);border:none;color:#fff;width:28px;height:28px;border-radius:50%;cursor:pointer"><i class="fas fa-trash" style="font-size:0.7rem"></i></button>
+                            <button class="btn-delete-gal" data-id="${i.id}" style="position:absolute;top:8px;right:8px;background:rgba(0,0,0,0.7);border:none;color:#fff;width:28px;height:28px;border-radius:50%;cursor:pointer"><i class="fas fa-trash" style="font-size:0.7rem"></i></button>
                         </div>
                     `).join('')}
                 </div>
@@ -755,20 +844,20 @@
                             return `
                             <tr>
                                 <td>#${i.id}</td>
-                                <td><strong>${i.customer_name}</strong></td>
-                                <td>${i.customer_phone}</td>
-                                <td>${itemNames}</td>
+                                <td><strong>${esc(i.customer_name)}</strong></td>
+                                <td>${esc(i.customer_phone)}</td>
+                                <td>${esc(itemNames)}</td>
                                 <td><strong>${i.total.toLocaleString()} FCFA</strong></td>
-                                <td><span class="badge-status badge-${i.status}">${i.status === 'pending' ? 'En attente' : i.status === 'confirmed' ? 'Confirmée' : i.status === 'completed' ? 'Livrée' : i.status === 'cancelled' ? 'Annulée' : i.status}</span></td>
+                                <td><span class="badge-status badge-${esc(i.status)}">${i.status === 'pending' ? 'En attente' : i.status === 'confirmed' ? 'Confirmée' : i.status === 'completed' ? 'Livrée' : i.status === 'cancelled' ? 'Annulée' : esc(i.status)}</span></td>
                                 <td>
                                     <div class="action-group">
                                         ${i.status === 'pending' ? `
-                                            <button class="btn btn-success btn-sm" onclick="updateOrder(${i.id},'confirmed',${JSON.stringify(phone)},${JSON.stringify(itemNames)},${i.total})"><i class="fas fa-check"></i></button>
-                                            <button class="btn btn-danger btn-sm" onclick="updateOrder(${i.id},'cancelled',${JSON.stringify(phone)},${JSON.stringify(itemNames)},${i.total})"><i class="fas fa-times"></i></button>
+                                            <button class="btn btn-success btn-sm btn-confirm-ord" data-id="${i.id}" data-phone="${escAttr(phone)}" data-items="${escAttr(itemNames)}" data-total="${i.total}" data-name="${escAttr(i.customer_name)}"><i class="fas fa-check"></i></button>
+                                            <button class="btn btn-danger btn-sm btn-cancel-ord" data-id="${i.id}" data-phone="${escAttr(phone)}" data-items="${escAttr(itemNames)}" data-total="${i.total}" data-name="${escAttr(i.customer_name)}"><i class="fas fa-times"></i></button>
                                         ` : ''}
-                                        ${i.status === 'confirmed' ? `<button class="btn btn-primary btn-sm" onclick="updateOrder(${i.id},'completed',${JSON.stringify(phone)},${JSON.stringify(itemNames)},${i.total})"><i class="fas fa-truck"></i></button>` : ''}
-                                        ${phone ? `<a href="https://wa.me/${phone}?text=${encodeURIComponent('Bonjour ' + i.customer_name + ' ! Concernant votre commande #' + i.id + ' (' + itemNames + ' - ' + i.total.toLocaleString() + ' FCFA) :\n\nKaayLeek 🍽️\n📞 +221 76 296 79 19')} " target="_blank" class="btn-whatsapp" title="Envoyer un message WhatsApp"><i class="fab fa-whatsapp"></i></a>` : ''}
-                                        <button class="btn btn-danger btn-sm" onclick="deleteOrder(${i.id})"><i class="fas fa-trash"></i></button>
+                                        ${i.status === 'confirmed' ? `<button class="btn btn-primary btn-sm btn-complete-ord" data-id="${i.id}" data-phone="${escAttr(phone)}" data-items="${escAttr(itemNames)}" data-total="${i.total}" data-name="${escAttr(i.customer_name)}"><i class="fas fa-truck"></i></button>` : ''}
+                                        ${phone ? `<a href="https://wa.me/${escAttr(phone)}?text=${encodeURIComponent('Bonjour ' + i.customer_name + ' ! Concernant votre commande #' + i.id + ' (' + itemNames + ' - ' + i.total.toLocaleString() + ' FCFA) :\n\nKaayLeek 🍽️\n📞 +221 76 296 79 19')} " target="_blank" class="btn-whatsapp" title="Envoyer un message WhatsApp"><i class="fab fa-whatsapp"></i></a>` : ''}
+                                        <button class="btn btn-danger btn-sm btn-delete-ord" data-id="${i.id}"><i class="fas fa-trash"></i></button>
                                     </div>
                                 </td>
                             </tr>`;
@@ -779,15 +868,15 @@
         `;
     }
 
-    async function updateOrder(id, status, phone, itemNames, total) {
+    async function updateOrder(id, status, phone, itemNames, total, customerName) {
         await fetch(`/api/orders/${id}`, { method: 'PUT', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ status }) });
         toast('Commande mise à jour');
         renderPage('commandes');
         if (phone && status !== 'pending') {
             const messages = {
-                confirmed: 'Bonjour ' + (i.customer_name || '') + '! Votre commande #' + id + ' (' + itemNames + ' - ' + total.toLocaleString() + ' FCFA) a été confirmée ✅. Merci pour votre confiance !\n\nKaayLeek 🍽️\n📞 +221 76 296 79 19',
+                confirmed: 'Bonjour ' + (customerName || '') + '! Votre commande #' + id + ' (' + itemNames + ' - ' + total.toLocaleString() + ' FCFA) a été confirmée ✅. Merci pour votre confiance !\n\nKaayLeek 🍽️\n📞 +221 76 296 79 19',
                 completed: 'Votre commande #' + id + ' est en route de livraison 🚚. Merci de patienter !\n\nKaayLeek 🍽️\n📞 +221 76 296 79 19',
-                cancelled: 'Désolé, votre commande #' + id + ' (' + itemNames + ') a été annulée ❌. Contactez-nous pour plus d\'infos.\n\nKaayLeek 🍽️\n📞 +221 76 296 79 19'
+                cancelled: 'Désolé ' + (customerName || '') + ', votre commande #' + id + ' (' + itemNames + ') a été annulée ❌. Contactez-nous pour plus d\'infos.\n\nKaayLeek 🍽️\n📞 +221 76 296 79 19'
             };
             if (messages[status]) {
                 window.open('https://wa.me/' + phone + '?text=' + encodeURIComponent(messages[status]), '_blank');
@@ -816,16 +905,16 @@
                         ${items.map(i => `
                             <tr>
                                 <td>#${i.id}</td>
-                                <td><strong>${i.name}</strong></td>
-                                <td>${i.email}</td>
-                                <td>${i.subject || '-'}</td>
-                                <td><small>${i.message.length > 80 ? i.message.substring(0, 80) + '...' : i.message}</small></td>
+                                <td><strong>${esc(i.name)}</strong></td>
+                                <td>${esc(i.email)}</td>
+                                <td>${esc(i.subject || '-')}</td>
+                                <td><small>${esc(i.message.length > 80 ? i.message.substring(0, 80) + '...' : i.message)}</small></td>
                                 <td><small>${i.created_at}</small></td>
                                 <td>
                                     <div class="action-group">
-                                        <a href="mailto:${i.email}?subject=Re: ${encodeURIComponent(i.subject || 'Votre message KaayLeek')}" class="btn btn-primary btn-sm" title="Répondre par email"><i class="fas fa-reply"></i></a>
+                                        <a href="mailto:${esc(i.email)}?subject=Re: ${encodeURIComponent(i.subject || 'Votre message KaayLeek')}" class="btn btn-primary btn-sm" title="Répondre par email"><i class="fas fa-reply"></i></a>
                                         <a href="https://wa.me/?text=${encodeURIComponent('Bonjour ' + i.name + ',\n\nConcernant votre message "' + (i.subject || '') + '" :\n\nKaayLeek 🍽️\n📞 +221 76 296 79 19')}" target="_blank" class="btn-whatsapp" title="Envoyer un message WhatsApp"><i class="fab fa-whatsapp"></i></a>
-                                        <button class="btn btn-danger btn-sm" onclick="deleteContact(${i.id})"><i class="fas fa-trash"></i></button>
+                                        <button class="btn btn-danger btn-sm btn-delete-con" data-id="${i.id}"><i class="fas fa-trash"></i></button>
                                     </div>
                                 </td>
                             </tr>
