@@ -162,27 +162,27 @@ async function start() {
     const menuCount = dbGet('SELECT COUNT(*) as count FROM menu_items');
     if (menuCount.count === 0) {
         const menuData = [
-            ['Tartare de Thiof', 'Thiof frais coupé en dés, avocat, mangue verte, huile d\'arachide grillée', 4500, 'entrees', 'fusion'],
-            ['Bruschetta Tomates', 'Pain grillé, tomates concassées, basilic frais, huile d\'olive, mozzarella di bufala', 3500, 'entrees', 'occidental'],
-            ['Yassa de Poulet', 'Poulet mariné citronné, oignons caramélisés, moutarde de Dijon', 3800, 'entrees', 'senegalais'],
-            ['Salade KaayLeek', 'Salade verte, mangue, noix de cajou grillées, vinaigrette au tamarind', 3200, 'entrees', 'fusion'],
-            ['Filet de Boeuf Rossini', 'Filet de boeuf, foie gras poêlé, sauce au poivre, pommes dauphine', 12500, 'plats-occidentaux', 'occidental'],
-            ['Saumon en Croûte', 'Saumon frais, feuilletage doré, épinards, sauce bisque de crevettes', 9800, 'plats-occidentaux', 'occidental'],
-            ['Risotto aux Crevettes', 'Riz carnaroli crémeux, crevettes royales, parmesan, safran', 7500, 'plats-occidentaux', 'occidental'],
-            ['Magret de Canard', 'Magret rosé, sauce à la mangue, purée de patate douce, légumes glacés', 8500, 'plats-occidentaux', 'occidental'],
-            ['Thiéboudienne Royale', 'Riz parfumé au tomate, poisson thiof farci, légumes traditionnels, tamarind', 5500, 'plats-senegalais', 'senegalais'],
-            ['Mafé Special', 'Boeuf fondant, sauce d\'arachide onctueuse, carottes, patates douces, riz blanc', 6200, 'plats-senegalais', 'senegalais'],
-            ['Poulet Yassa Grandiose', 'Poulet fermier mariné, oignons grillés, citron confit, riz ognon', 5800, 'plats-senegalais', 'senegalais'],
-            ['Poisson Braisé', 'Thiof entier braisé au feu de bois, yassa de légumes, attiéké, sauce piment', 6500, 'plats-senegalais', 'senegalais'],
-            ['Délice au Baobab', 'Mousse au baobab, coulis de mangue, crumble d\'amande, feuille d\'or', 2800, 'desserts', 'fusion'],
-            ['Fondant au Chocolat', 'Chocolat noir 70%, coeur coulant, glace vanille de Madagascar', 3200, 'desserts', 'occidental'],
-            ['Bissap Givré', 'Sorbet bissap, groseilles, menthe fraîche, sirop de baobab', 2500, 'desserts', 'senegalais'],
-            ['Château Margaux 2018', 'Cru classé Bordeaux, arômes de fruits noirs et d\'épices fines', 35000, 'boissons', 'occidental'],
-            ['Bouye Maison', 'Jus de baobab frais, lait, vanille, cannelle, servi bien frais', 1500, 'boissons', 'senegalais'],
-            ['Cocktail KaayLeek', 'Rhum, jus de passion, sirop de gingembre, Perrier, menthe', 2500, 'boissons', 'fusion']
+            ['Tartare de Thiof', 'Thiof frais coupé en dés, avocat, mangue verte, huile d\'arachide grillée', 4500, 'entrees', 'fusion', 'images/plats/salade.jpg'],
+            ['Bruschetta Tomates', 'Pain grillé, tomates concassées, basilic frais, huile d\'olive, mozzarella di bufala', 3500, 'entrees', 'occidental', 'images/plats/Bruschetta-Tomates.jpg'],
+            ['Yassa de Poulet', 'Poulet mariné citronné, oignons caramélisés, moutarde de Dijon', 3800, 'entrees', 'senegalais', 'images/plats/yassa-poulet.jpg'],
+            ['Salade KaayLeek', 'Salade verte, mangue, noix de cajou grillées, vinaigrette au tamarind', 3200, 'entrees', 'fusion', 'images/plats/salade.jpg'],
+            ['Filet de Boeuf Rossini', 'Filet de boeuf, foie gras poêlé, sauce au poivre, pommes dauphine', 12500, 'plats-occidentaux', 'occidental', 'images/plats/Filet-de-Boeuf-Rossini.jpg'],
+            ['Saumon en Croûte', 'Saumon frais, feuilletage doré, épinards, sauce bisque de crevettes', 9800, 'plats-occidentaux', 'occidental', 'images/plats/Saumon-en-Croute.jpg'],
+            ['Risotto aux Crevettes', 'Riz carnaroli crémeux, crevettes royales, parmesan, safran', 7500, 'plats-occidentaux', 'occidental', 'images/plats/Risotto-aux-Crevettes.jpg'],
+            ['Magret de Canard', 'Magret rosé, sauce à la mangue, purée de patate douce, légumes glacés', 8500, 'plats-occidentaux', 'occidental', 'images/plats/Magret-de-Canard.jpg'],
+            ['Thiéboudienne Royale', 'Riz parfumé au tomate, poisson thiof farci, légumes traditionnels, tamarind', 5500, 'plats-senegalais', 'senegalais', 'images/plats/thieboudieune.jpg'],
+            ['Mafé Special', 'Boeuf fondant, sauce d\'arachide onctueuse, carottes, patates douces, riz blanc', 6200, 'plats-senegalais', 'senegalais', 'images/plats/mafe.jpg'],
+            ['Poulet Yassa Grandiose', 'Poulet fermier mariné, oignons grillés, citron confit, riz ognon', 5800, 'plats-senegalais', 'senegalais', 'images/plats/yassa-poulet.jpg'],
+            ['Poisson Braisé', 'Thiof entier braisé au feu de bois, yassa de légumes, attiéké, sauce piment', 6500, 'plats-senegalais', 'senegalais', 'images/plats/Poisson-Braise.jpg'],
+            ['Délice au Baobab', 'Mousse au baobab, coulis de mangue, crumble d\'amande, feuille d\'or', 2800, 'desserts', 'fusion', 'images/plats/fondant-au-chocolat.jpg'],
+            ['Fondant au Chocolat', 'Chocolat noir 70%, coeur coulant, glace vanille de Madagascar', 3200, 'desserts', 'occidental', 'images/plats/fondant-au-chocolat.jpg'],
+            ['Bissap Givré', 'Sorbet bissap, groseilles, menthe fraîche, sirop de baobab', 2500, 'desserts', 'senegalais', 'images/plats/bissap.jpg'],
+            ['Château Margaux 2018', 'Cru classé Bordeaux, arômes de fruits noirs et d\'épices fines', 35000, 'boissons', 'occidental', 'images/plats/chateau-margeaux.jpg'],
+            ['Bouye Maison', 'Jus de baobab frais, lait, vanille, cannelle, servi bien frais', 1500, 'boissons', 'senegalais', 'images/plats/jus-bouye.jpg'],
+            ['Cocktail KaayLeek', 'Rhum, jus de passion, sirop de gingembre, Perrier, menthe', 2500, 'boissons', 'fusion', 'images/plats/cocktail.jpg']
         ];
         for (const item of menuData) {
-            dbRun('INSERT INTO menu_items (name, description, price, category, type) VALUES (?, ?, ?, ?, ?)', item);
+            dbRun('INSERT INTO menu_items (name, description, price, category, type, image) VALUES (?, ?, ?, ?, ?, ?)', item);
         }
     }
 
