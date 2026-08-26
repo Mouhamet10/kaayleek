@@ -768,7 +768,7 @@ function openLightbox(title, imgSrc) {
     lightbox.classList.add('active');
 }
 
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
     renderTransitionOverlay();
     initPageTransition();
     renderNavbar();
@@ -778,6 +778,7 @@ document.addEventListener('DOMContentLoaded', () => {
     initScrollReveal();
     initLightbox();
     renderCartBadge();
+    await fetchMenuData();
 
     document.addEventListener('keydown', (e) => {
         if ((e.ctrlKey || e.metaKey) && e.key === 'k') { e.preventDefault(); openSearch(); }
