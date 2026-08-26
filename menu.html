@@ -64,6 +64,15 @@
             renderMenuCards(MENU_DATA, grid);
             initMenuFilters('#menuFilters .filter-btn', '#menuGrid');
             initMenuSearch('#menuSearch', '#menuGrid');
+
+            const params = new URLSearchParams(window.location.search);
+            const q = params.get('q');
+            if (q) {
+                const searchInput = document.getElementById('menuSearch');
+                searchInput.value = q;
+                searchInput.dispatchEvent(new Event('input'));
+            }
+
             initScrollReveal();
         });
     </script>

@@ -542,7 +542,7 @@ function renderSearchModal() {
             return;
         }
         resultsEl.innerHTML = matches.map(item => `
-            <div class="search-result-item" onclick="closeSearch(); window.location.href='${getBasePath()}menu.html'">
+            <div class="search-result-item" onclick="goToMenuSearch('${sanitizeHTML(item.name)}')">
                 <div class="search-result-img">
                     ${item.img ? `<img src="${item.img}" alt="${item.name}" onerror="this.style.display='none'">` : `<i class="fas ${item.icon}"></i>`}
                 </div>
@@ -569,6 +569,11 @@ function closeSearch() {
     document.body.style.overflow = '';
     document.getElementById('searchInput').value = '';
     document.getElementById('searchResults').innerHTML = '<p class="search-hint"><i class="fas fa-utensils"></i> Tapez pour rechercher dans notre menu</p>';
+}
+
+function goToMenuSearch(query) {
+    closeSearch();
+    window.location.href = getBasePath() + 'menu.html?q=' + encodeURIComponent(query);
 }
 
 function renderTransitionOverlay() {
