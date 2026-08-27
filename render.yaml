@@ -14,3 +14,7 @@ services:
         value: admin
       - key: ADMIN_PASS
         generateValue: true
+      - key: TURSO_URL
+        sync: false
+      - key: TURSO_TOKEN
+        sync: false

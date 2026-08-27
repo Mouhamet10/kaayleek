@@ -1,5 +1,5 @@
 const express = require('express');
-const initSqlJs = require('sql.js');
+const { createClient } = require('@libsql/client');
 const multer = require('multer');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
@@ -16,7 +16,9 @@ const PORT = process.env.PORT || 3000;
 const JWT_SECRET = process.env.JWT_SECRET || crypto.randomBytes(32).toString('hex');
 const ADMIN_USER = process.env.ADMIN_USER || 'admin';
 const ADMIN_PASS = process.env.ADMIN_PASS || 'admin123';
-const DB_PATH = path.join(__dirname, 'kaayleek.db');
+const TURSO_URL = process.env.TURSO_URL || process.env.LIBSQL_URL || '';
+const TURSO_TOKEN = process.env.TURSO_TOKEN || process.env.LIBSQL_AUTH_TOKEN || '';
+const DB_PATH = process.env.DB_PATH || path.join(__dirname, 'kaayleek.db');
 const isProduction = process.env.NODE_ENV === 'production';
 
 // Security headers
@@ -74,8 +76,14 @@ const upload = multer({
 // ========== DB HELPERS ==========
 let db;
 let saveTimeout = null;
+let useRemote = false;
+
+function _rowsToObjects(result) {
+    return (result.rows || []).map(r => r.toJSON ? r.toJSON() : r);
+}
 
 function scheduleSave() {
+    if (useRemote) return;
     if (saveTimeout) return;
     saveTimeout = setTimeout(() => {
         saveDb();
@@ -84,12 +92,17 @@ function scheduleSave() {
 }
 
 function saveDb() {
+    if (useRemote) return;
     const data = db.export();
     const buffer = Buffer.from(data);
     fs.writeFileSync(DB_PATH, buffer);
 }
 
-function dbAll(sql, params = []) {
+async function dbAll(sql, params = []) {
+    if (useRemote) {
+        const res = await db.execute({ sql, args: params.map(p => p === undefined ? null : p) });
+        return _rowsToObjects(res);
+    }
     const stmt = db.prepare(sql);
     stmt.bind(params);
     const rows = [];
@@ -98,7 +111,12 @@ function dbAll(sql, params = []) {
     return rows;
 }
 
-function dbGet(sql, params = []) {
+async function dbGet(sql, params = []) {
+    if (useRemote) {
+        const res = await db.execute({ sql, args: params.map(p => p === undefined ? null : p) });
+        const rows = _rowsToObjects(res);
+        return rows[0] || null;
+    }
     const stmt = db.prepare(sql);
     stmt.bind(params);
     let row = null;
@@ -107,13 +125,26 @@ function dbGet(sql, params = []) {
     return row;
 }
 
-function dbRun(sql, params = []) {
+async function dbRun(sql, params = []) {
+    if (useRemote) {
+        const res = await db.execute({ sql, args: params.map(p => p === undefined ? null : p) });
+        return { lastInsertRowid: Number(res.lastInsertRowid) || 0, changes: res.rowsAffected || 0 };
+    }
     const safeParams = params.map(p => p === undefined ? null : p);
     db.run(sql, safeParams);
     const changes = db.getRowsModified();
     const rowId = db.exec("SELECT last_insert_rowid() as id");
     scheduleSave();
     return { lastInsertRowid: rowId[0]?.values[0][0] || 0, changes };
+}
+
+async function dbExec(sql) {
+    if (useRemote) {
+        await db.execute({ sql });
+        return;
+    }
+    db.exec(sql);
+    scheduleSave();
 }
 
 // ========== VALIDATION HELPERS ==========
@@ -154,23 +185,34 @@ function auth(req, res, next) {
 
 // ========== INIT ==========
 async function start() {
-    const SQL = await initSqlJs();
-
-    if (fs.existsSync(DB_PATH)) {
-        const buf = fs.readFileSync(DB_PATH);
-        db = new SQL.Database(buf);
+    if (TURSO_URL) {
+        useRemote = true;
+        db = createClient({
+            url: TURSO_URL,
+            authToken: TURSO_TOKEN || undefined,
+        });
+        console.log('🗄️  Utilisation de la base de données cloud (Turso/libSQL)');
     } else {
-        db = new SQL.Database();
+        useRemote = false;
+        const initSqlJs = require('sql.js');
+        const SQL = await initSqlJs();
+        if (fs.existsSync(DB_PATH)) {
+            const buf = fs.readFileSync(DB_PATH);
+            db = new SQL.Database(buf);
+        } else {
+            db = new SQL.Database();
+        }
+        console.log(`🗄️  Utilisation de la base SQLite locale: ${DB_PATH}`);
     }
 
-    db.run(`CREATE TABLE IF NOT EXISTS users (
+    await dbExec(`CREATE TABLE IF NOT EXISTS users (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         username TEXT UNIQUE NOT NULL,
         password TEXT NOT NULL,
         role TEXT DEFAULT 'admin',
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP
     )`);
-    db.run(`CREATE TABLE IF NOT EXISTS menu_items (
+    await dbExec(`CREATE TABLE IF NOT EXISTS menu_items (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         name TEXT NOT NULL,
         description TEXT,
@@ -182,7 +224,7 @@ async function start() {
         allergens TEXT DEFAULT '',
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP
     )`);
-    db.run(`CREATE TABLE IF NOT EXISTS reservations (
+    await dbExec(`CREATE TABLE IF NOT EXISTS reservations (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         name TEXT NOT NULL,
         phone TEXT NOT NULL,
@@ -196,14 +238,14 @@ async function start() {
         status TEXT DEFAULT 'pending',
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP
     )`);
-    db.run(`CREATE TABLE IF NOT EXISTS gallery (
+    await dbExec(`CREATE TABLE IF NOT EXISTS gallery (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         title TEXT NOT NULL,
         image TEXT NOT NULL,
         category TEXT NOT NULL,
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP
     )`);
-    db.run(`CREATE TABLE IF NOT EXISTS orders (
+    await dbExec(`CREATE TABLE IF NOT EXISTS orders (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         customer_name TEXT NOT NULL,
         customer_phone TEXT NOT NULL,
@@ -214,7 +256,7 @@ async function start() {
         notes TEXT,
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP
     )`);
-    db.run(`CREATE TABLE IF NOT EXISTS contacts (
+    await dbExec(`CREATE TABLE IF NOT EXISTS contacts (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         name TEXT NOT NULL,
         email TEXT NOT NULL,
@@ -222,26 +264,26 @@ async function start() {
         message TEXT NOT NULL,
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP
     )`);
-    db.run(`CREATE TABLE IF NOT EXISTS newsletter (
+    await dbExec(`CREATE TABLE IF NOT EXISTS newsletter (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         email TEXT UNIQUE NOT NULL,
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP
     )`);
 
-    saveDb();
+    if (!useRemote) saveDb();
 
     // Migration: add allergens column if missing
-    try { dbRun('ALTER TABLE menu_items ADD COLUMN allergens TEXT DEFAULT \'\''); } catch {}
+    try { await dbRun('ALTER TABLE menu_items ADD COLUMN allergens TEXT DEFAULT \'\''); } catch {}
 
     // Seed admin
-    const admin = dbGet('SELECT id FROM users WHERE username = ?', [ADMIN_USER]);
+    const admin = await dbGet('SELECT id FROM users WHERE username = ?', [ADMIN_USER]);
     if (!admin) {
         const hash = bcrypt.hashSync(ADMIN_PASS, 10);
-        dbRun('INSERT INTO users (username, password, role) VALUES (?, ?, ?)', [ADMIN_USER, hash, 'admin']);
+        await dbRun('INSERT INTO users (username, password, role) VALUES (?, ?, ?)', [ADMIN_USER, hash, 'admin']);
     }
 
     // Seed menu
-    const menuCount = dbGet('SELECT COUNT(*) as count FROM menu_items');
+    const menuCount = await dbGet('SELECT COUNT(*) as count FROM menu_items');
     if (menuCount.count === 0) {
         const menuData = [
             ['Tartare de Thiof', 'Thiof frais coupé en dés, avocat, mangue verte, huile d\'arachide grillée', 4500, 'entrees', 'fusion', 'images/plats/salade.jpg', 'Poisson'],
@@ -297,17 +339,17 @@ async function start() {
             ['Petit Pois à la Française', 'Petits pois frais, lait, menthe, beurre, oignons grelots', 3500, 'plats-occidentaux', 'occidental', 'images/plats/petit-pois.jpg', 'Lait']
         ];
         for (const item of menuData) {
-            dbRun('INSERT INTO menu_items (name, description, price, category, type, image, allergens) VALUES (?, ?, ?, ?, ?, ?, ?)', item);
+            await dbRun('INSERT INTO menu_items (name, description, price, category, type, image, allergens) VALUES (?, ?, ?, ?, ?, ?, ?)', item);
         }
     }
 
     // ========== AUTH ROUTES ==========
-    app.post('/api/auth/login', authLimiter, (req, res) => {
+    app.post('/api/auth/login', authLimiter, async (req, res) => {
         const { username, password } = req.body;
         if (!username || !password) {
             return res.status(400).json({ error: 'Identifiants requis' });
         }
-        const user = dbGet('SELECT * FROM users WHERE username = ?', [sanitize(username)]);
+        const user = await dbGet('SELECT * FROM users WHERE username = ?', [sanitize(username)]);
         if (!user || !bcrypt.compareSync(password, user.password)) {
             return res.status(401).json({ error: 'Identifiants incorrects' });
         }
@@ -330,13 +372,13 @@ async function start() {
         res.json({ success: true });
     });
 
-    app.get('/api/auth/me', auth, (req, res) => {
-        const user = dbGet('SELECT id, username, role FROM users WHERE id = ?', [req.user.id]);
+    app.get('/api/auth/me', auth, async (req, res) => {
+        const user = await dbGet('SELECT id, username, role FROM users WHERE id = ?', [req.user.id]);
         res.json(user);
     });
 
     // ========== MENU ROUTES ==========
-    app.get('/api/menu', apiLimiter, (req, res) => {
+    app.get('/api/menu', apiLimiter, async (req, res) => {
         const { category, search, available } = req.query;
         let sql = 'SELECT * FROM menu_items WHERE 1=1';
         const params = [];
@@ -357,18 +399,18 @@ async function start() {
             params.push(parseInt(available) || 0);
         }
         sql += ' ORDER BY category, name';
-        res.json(dbAll(sql, params));
+        res.json(await dbAll(sql, params));
     });
 
-    app.get('/api/menu/:id', apiLimiter, (req, res) => {
+    app.get('/api/menu/:id', apiLimiter, async (req, res) => {
         const id = parseInt(req.params.id);
         if (isNaN(id) || id < 1) return res.status(400).json({ error: 'ID invalide' });
-        const item = dbGet('SELECT * FROM menu_items WHERE id = ?', [id]);
+        const item = await dbGet('SELECT * FROM menu_items WHERE id = ?', [id]);
         if (!item) return res.status(404).json({ error: 'Plat non trouvé' });
         res.json(item);
     });
 
-    app.post('/api/menu', auth, upload.single('image'), (req, res) => {
+    app.post('/api/menu', auth, upload.single('image'), async (req, res) => {
         const { name, description, price, category, type, available, allergens } = req.body;
         const error = requireFields(req.body, ['name', 'price', 'category']);
         if (error) return res.status(400).json({ error });
@@ -383,12 +425,12 @@ async function start() {
         const itemType = validTypes.includes(type) ? type : 'occidental';
 
         const image = req.file ? `/uploads/${req.file.filename}` : null;
-        const result = dbRun('INSERT INTO menu_items (name, description, price, category, type, image, available, allergens) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+        const result = await dbRun('INSERT INTO menu_items (name, description, price, category, type, image, available, allergens) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
             [sanitize(name), sanitize(description || ''), priceNum, category, itemType, image, available !== undefined ? parseInt(available) || 0 : 1, sanitize(allergens || '')]);
         res.json({ id: result.lastInsertRowid, success: true });
     });
 
-    app.put('/api/menu/:id', auth, upload.single('image'), (req, res) => {
+    app.put('/api/menu/:id', auth, upload.single('image'), async (req, res) => {
         const id = parseInt(req.params.id);
         if (isNaN(id) || id < 1) return res.status(400).json({ error: 'ID invalide' });
 
@@ -399,23 +441,23 @@ async function start() {
         const priceNum = parseInt(price);
         if (isNaN(priceNum) || priceNum < 0) return res.status(400).json({ error: 'Prix invalide' });
 
-        const existing = dbGet('SELECT * FROM menu_items WHERE id = ?', [id]);
+        const existing = await dbGet('SELECT * FROM menu_items WHERE id = ?', [id]);
         if (!existing) return res.status(404).json({ error: 'Plat non trouvé' });
         const image = req.file ? `/uploads/${req.file.filename}` : existing.image;
-        dbRun('UPDATE menu_items SET name=?, description=?, price=?, category=?, type=?, image=?, available=?, allergens=? WHERE id=?',
+        await dbRun('UPDATE menu_items SET name=?, description=?, price=?, category=?, type=?, image=?, available=?, allergens=? WHERE id=?',
             [sanitize(name), sanitize(description || ''), priceNum, category, type, image, available !== undefined ? parseInt(available) || 0 : 1, sanitize(allergens || ''), id]);
         res.json({ success: true });
     });
 
-    app.delete('/api/menu/:id', auth, (req, res) => {
+    app.delete('/api/menu/:id', auth, async (req, res) => {
         const id = parseInt(req.params.id);
         if (isNaN(id) || id < 1) return res.status(400).json({ error: 'ID invalide' });
-        dbRun('DELETE FROM menu_items WHERE id = ?', [id]);
+        await dbRun('DELETE FROM menu_items WHERE id = ?', [id]);
         res.json({ success: true });
     });
 
     // ========== RESERVATION ROUTES ==========
-    app.get('/api/reservations', auth, apiLimiter, (req, res) => {
+    app.get('/api/reservations', auth, apiLimiter, async (req, res) => {
         const { status } = req.query;
         let sql = 'SELECT * FROM reservations';
         const params = [];
@@ -427,10 +469,10 @@ async function start() {
             }
         }
         sql += ' ORDER BY date DESC, time DESC';
-        res.json(dbAll(sql, params));
+        res.json(await dbAll(sql, params));
     });
 
-    app.post('/api/reservations', apiLimiter, (req, res) => {
+    app.post('/api/reservations', apiLimiter, async (req, res) => {
         const { name, phone, email, date, time, guests, occasion, area, notes } = req.body;
         const error = requireFields(req.body, ['name', 'phone', 'date', 'time', 'guests']);
         if (error) return res.status(400).json({ error });
@@ -441,30 +483,30 @@ async function start() {
         const guestsNum = parseInt(guests);
         if (isNaN(guestsNum) || guestsNum < 1 || guestsNum > 50) return res.status(400).json({ error: 'Nombre de convives invalide' });
 
-        const result = dbRun('INSERT INTO reservations (name, phone, email, date, time, guests, occasion, area, notes) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
+        const result = await dbRun('INSERT INTO reservations (name, phone, email, date, time, guests, occasion, area, notes) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
             [sanitize(name), sanitize(phone), sanitize(email || ''), date, time, guestsNum, sanitize(occasion || ''), sanitize(area || ''), sanitize(notes || '')]);
         res.json({ id: result.lastInsertRowid, success: true });
     });
 
-    app.put('/api/reservations/:id', auth, (req, res) => {
+    app.put('/api/reservations/:id', auth, async (req, res) => {
         const id = parseInt(req.params.id);
         if (isNaN(id) || id < 1) return res.status(400).json({ error: 'ID invalide' });
         const { status } = req.body;
         const validStatuses = ['pending', 'confirmed', 'cancelled'];
         if (!validStatuses.includes(status)) return res.status(400).json({ error: 'Statut invalide' });
-        dbRun('UPDATE reservations SET status = ? WHERE id = ?', [status, id]);
+        await dbRun('UPDATE reservations SET status = ? WHERE id = ?', [status, id]);
         res.json({ success: true });
     });
 
-    app.delete('/api/reservations/:id', auth, (req, res) => {
+    app.delete('/api/reservations/:id', auth, async (req, res) => {
         const id = parseInt(req.params.id);
         if (isNaN(id) || id < 1) return res.status(400).json({ error: 'ID invalide' });
-        dbRun('DELETE FROM reservations WHERE id = ?', [id]);
+        await dbRun('DELETE FROM reservations WHERE id = ?', [id]);
         res.json({ success: true });
     });
 
     // ========== GALLERY ROUTES ==========
-    app.get('/api/gallery', apiLimiter, (req, res) => {
+    app.get('/api/gallery', apiLimiter, async (req, res) => {
         const { category } = req.query;
         let sql = 'SELECT * FROM gallery';
         const params = [];
@@ -476,34 +518,34 @@ async function start() {
             }
         }
         sql += ' ORDER BY created_at DESC';
-        res.json(dbAll(sql, params));
+        res.json(await dbAll(sql, params));
     });
 
-    app.post('/api/gallery', auth, upload.single('image'), (req, res) => {
+    app.post('/api/gallery', auth, upload.single('image'), async (req, res) => {
         const { title, category } = req.body;
         if (!title || !title.trim()) return res.status(400).json({ error: 'Titre requis' });
         if (!req.file) return res.status(400).json({ error: 'Image requise' });
         const validCategories = ['plat', 'ambiance', 'equipe', 'cuisine', 'evenement', 'desserts', 'boissons'];
         const cat = validCategories.includes(category) ? category : 'plat';
         const image = `/uploads/${req.file.filename}`;
-        const result = dbRun('INSERT INTO gallery (title, image, category) VALUES (?, ?, ?)', [sanitize(title), image, cat]);
+        const result = await dbRun('INSERT INTO gallery (title, image, category) VALUES (?, ?, ?)', [sanitize(title), image, cat]);
         res.json({ id: result.lastInsertRowid, success: true });
     });
 
-    app.delete('/api/gallery/:id', auth, (req, res) => {
+    app.delete('/api/gallery/:id', auth, async (req, res) => {
         const id = parseInt(req.params.id);
         if (isNaN(id) || id < 1) return res.status(400).json({ error: 'ID invalide' });
-        const item = dbGet('SELECT * FROM gallery WHERE id = ?', [id]);
+        const item = await dbGet('SELECT * FROM gallery WHERE id = ?', [id]);
         if (item && item.image) {
             const filePath = path.join(__dirname, item.image);
             if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
         }
-        dbRun('DELETE FROM gallery WHERE id = ?', [id]);
+        await dbRun('DELETE FROM gallery WHERE id = ?', [id]);
         res.json({ success: true });
     });
 
     // ========== ORDER ROUTES ==========
-    app.get('/api/orders', auth, apiLimiter, (req, res) => {
+    app.get('/api/orders', auth, apiLimiter, async (req, res) => {
         const { status } = req.query;
         let sql = 'SELECT * FROM orders';
         const params = [];
@@ -515,10 +557,10 @@ async function start() {
             }
         }
         sql += ' ORDER BY created_at DESC';
-        res.json(dbAll(sql, params));
+        res.json(await dbAll(sql, params));
     });
 
-    app.post('/api/orders', apiLimiter, (req, res) => {
+    app.post('/api/orders', apiLimiter, async (req, res) => {
         const { customer_name, customer_phone, customer_email, items, total, notes } = req.body;
         const error = requireFields(req.body, ['customer_name', 'customer_phone', 'items', 'total']);
         if (error) return res.status(400).json({ error });
@@ -531,71 +573,71 @@ async function start() {
 
         if (!Array.isArray(items) || items.length === 0) return res.status(400).json({ error: 'Articles requis' });
 
-        const result = dbRun('INSERT INTO orders (customer_name, customer_phone, customer_email, items, total, notes) VALUES (?, ?, ?, ?, ?, ?)',
+        const result = await dbRun('INSERT INTO orders (customer_name, customer_phone, customer_email, items, total, notes) VALUES (?, ?, ?, ?, ?, ?)',
             [sanitize(customer_name), sanitize(customer_phone), sanitize(customer_email || ''), JSON.stringify(items), totalNum, sanitize(notes || '')]);
         res.json({ id: result.lastInsertRowid, success: true });
     });
 
-    app.put('/api/orders/:id', auth, (req, res) => {
+    app.put('/api/orders/:id', auth, async (req, res) => {
         const id = parseInt(req.params.id);
         if (isNaN(id) || id < 1) return res.status(400).json({ error: 'ID invalide' });
         const { status } = req.body;
         const validStatuses = ['pending', 'confirmed', 'completed', 'cancelled'];
         if (!validStatuses.includes(status)) return res.status(400).json({ error: 'Statut invalide' });
-        dbRun('UPDATE orders SET status = ? WHERE id = ?', [status, id]);
+        await dbRun('UPDATE orders SET status = ? WHERE id = ?', [status, id]);
         res.json({ success: true });
     });
 
-    app.delete('/api/orders/:id', auth, (req, res) => {
+    app.delete('/api/orders/:id', auth, async (req, res) => {
         const id = parseInt(req.params.id);
         if (isNaN(id) || id < 1) return res.status(400).json({ error: 'ID invalide' });
-        dbRun('DELETE FROM orders WHERE id = ?', [id]);
+        await dbRun('DELETE FROM orders WHERE id = ?', [id]);
         res.json({ success: true });
     });
 
     // ========== CONTACTS ==========
-    app.post('/api/contacts', contactLimiter, (req, res) => {
+    app.post('/api/contacts', contactLimiter, async (req, res) => {
         const { name, email, subject, message } = req.body;
         const error = requireFields(req.body, ['name', 'email', 'message']);
         if (error) return res.status(400).json({ error });
         if (!validateEmail(email)) return res.status(400).json({ error: 'Email invalide' });
-        const result = dbRun('INSERT INTO contacts (name, email, subject, message) VALUES (?, ?, ?, ?)',
+        const result = await dbRun('INSERT INTO contacts (name, email, subject, message) VALUES (?, ?, ?, ?)',
             [sanitize(name), sanitize(email), sanitize(subject || ''), sanitize(message)]);
         res.json({ id: result.lastInsertRowid, success: true });
     });
 
-    app.get('/api/contacts', auth, apiLimiter, (req, res) => {
-        res.json(dbAll('SELECT * FROM contacts ORDER BY created_at DESC'));
+    app.get('/api/contacts', auth, apiLimiter, async (req, res) => {
+        res.json(await dbAll('SELECT * FROM contacts ORDER BY created_at DESC'));
     });
 
-    app.delete('/api/contacts/:id', auth, (req, res) => {
+    app.delete('/api/contacts/:id', auth, async (req, res) => {
         const id = parseInt(req.params.id);
         if (isNaN(id) || id < 1) return res.status(400).json({ error: 'ID invalide' });
-        dbRun('DELETE FROM contacts WHERE id = ?', [id]);
+        await dbRun('DELETE FROM contacts WHERE id = ?', [id]);
         res.json({ success: true });
     });
 
     // ========== NEWSLETTER ==========
-    app.post('/api/newsletter', contactLimiter, (req, res) => {
+    app.post('/api/newsletter', contactLimiter, async (req, res) => {
         const { email } = req.body;
         if (!email) return res.status(400).json({ error: 'Email requis' });
         if (!validateEmail(email)) return res.status(400).json({ error: 'Email invalide' });
         try {
-            dbRun('INSERT INTO newsletter (email) VALUES (?)', [sanitize(email)]);
+            await dbRun('INSERT INTO newsletter (email) VALUES (?)', [sanitize(email)]);
         } catch {}
         res.json({ success: true });
     });
 
     // ========== DASHBOARD STATS ==========
-    app.get('/api/stats', auth, apiLimiter, (req, res) => {
-        const menuCount = dbGet('SELECT COUNT(*) as count FROM menu_items').count;
-        const reservationsPending = dbGet("SELECT COUNT(*) as count FROM reservations WHERE status = 'pending'").count;
-        const reservationsTotal = dbGet('SELECT COUNT(*) as count FROM reservations').count;
-        const ordersPending = dbGet("SELECT COUNT(*) as count FROM orders WHERE status = 'pending'").count;
-        const ordersTotal = dbGet('SELECT COUNT(*) as count FROM orders').count;
-        const galleryCount = dbGet('SELECT COUNT(*) as count FROM gallery').count;
-        const todayReservations = dbGet("SELECT COUNT(*) as count FROM reservations WHERE date = date('now')").count;
-        const contactsCount = dbGet('SELECT COUNT(*) as count FROM contacts').count;
+    app.get('/api/stats', auth, apiLimiter, async (req, res) => {
+        const menuCount = (await dbGet('SELECT COUNT(*) as count FROM menu_items')).count;
+        const reservationsPending = (await dbGet("SELECT COUNT(*) as count FROM reservations WHERE status = 'pending'")).count;
+        const reservationsTotal = (await dbGet('SELECT COUNT(*) as count FROM reservations')).count;
+        const ordersPending = (await dbGet("SELECT COUNT(*) as count FROM orders WHERE status = 'pending'")).count;
+        const ordersTotal = (await dbGet('SELECT COUNT(*) as count FROM orders')).count;
+        const galleryCount = (await dbGet('SELECT COUNT(*) as count FROM gallery')).count;
+        const todayReservations = (await dbGet("SELECT COUNT(*) as count FROM reservations WHERE date = date('now')")).count;
+        const contactsCount = (await dbGet('SELECT COUNT(*) as count FROM contacts')).count;
         res.json({ menuCount, reservationsPending, reservationsTotal, ordersPending, ordersTotal, galleryCount, todayReservations, contactsCount });
     });
 
@@ -631,6 +673,10 @@ async function start() {
         console.log(`  🔑 Login: ${ADMIN_USER} / ${isProduction ? '***' : ADMIN_PASS}\n`);
     });
 }
+
+process.on('unhandledRejection', (reason) => {
+    console.error('Unhandled rejection:', reason);
+});
 
 start().catch(err => {
     console.error('Failed to start server:', err);
