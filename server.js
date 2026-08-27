@@ -53,25 +53,24 @@ app.use(express.json());
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname)));
 
-// Upload config
-const uploadDir = path.join(__dirname, 'uploads');
-if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
-
-const storage = multer.diskStorage({
-    destination: (req, file, cb) => cb(null, uploadDir),
-    filename: (req, file, cb) => {
-        const ext = path.extname(file.originalname);
-        cb(null, `${Date.now()}-${Math.random().toString(36).slice(2, 8)}${ext}`);
-    }
-});
+// Upload config — images stockées en mémoire puis persévérées dans la base de données (BLOB)
 const upload = multer({
-    storage,
-    limits: { fileSize: 5 * 1024 * 1024 },
+    storage: multer.memoryStorage(),
+    limits: { fileSize: 8 * 1024 * 1024 },
     fileFilter: (req, file, cb) => {
         if (file.mimetype.startsWith('image/')) cb(null, true);
         else cb(new Error('Seules les images sont acceptées'));
     }
 });
+
+// Enregistre un fichier image en base et renvoie l'URL d'accès (ou null si aucun fichier)
+async function storeImage(file) {
+    if (!file || !file.buffer) return null;
+    const data = Buffer.from(file.buffer);
+    const mime = file.mimetype || 'image/jpeg';
+    const res = await dbRun('INSERT INTO images (data, mime) VALUES (?, ?)', [data, mime]);
+    return `/api/image/${res.lastInsertRowid}`;
+}
 
 // ========== DB HELPERS ==========
 let db;
@@ -269,6 +268,12 @@ async function start() {
         email TEXT UNIQUE NOT NULL,
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP
     )`);
+    await dbExec(`CREATE TABLE IF NOT EXISTS images (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        data BLOB NOT NULL,
+        mime TEXT DEFAULT 'image/jpeg',
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    )`);
 
     if (!useRemote) saveDb();
 
@@ -424,7 +429,7 @@ async function start() {
         const validTypes = ['occidental', 'senegalais', 'fusion'];
         const itemType = validTypes.includes(type) ? type : 'occidental';
 
-        const image = req.file ? `/uploads/${req.file.filename}` : null;
+        const image = req.file ? await storeImage(req.file) : null;
         const result = await dbRun('INSERT INTO menu_items (name, description, price, category, type, image, available, allergens) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
             [sanitize(name), sanitize(description || ''), priceNum, category, itemType, image, available !== undefined ? parseInt(available) || 0 : 1, sanitize(allergens || '')]);
         res.json({ id: result.lastInsertRowid, success: true });
@@ -443,7 +448,7 @@ async function start() {
 
         const existing = await dbGet('SELECT * FROM menu_items WHERE id = ?', [id]);
         if (!existing) return res.status(404).json({ error: 'Plat non trouvé' });
-        const image = req.file ? `/uploads/${req.file.filename}` : existing.image;
+        const image = req.file ? await storeImage(req.file) : existing.image;
         await dbRun('UPDATE menu_items SET name=?, description=?, price=?, category=?, type=?, image=?, available=?, allergens=? WHERE id=?',
             [sanitize(name), sanitize(description || ''), priceNum, category, type, image, available !== undefined ? parseInt(available) || 0 : 1, sanitize(allergens || ''), id]);
         res.json({ success: true });
@@ -452,6 +457,11 @@ async function start() {
     app.delete('/api/menu/:id', auth, async (req, res) => {
         const id = parseInt(req.params.id);
         if (isNaN(id) || id < 1) return res.status(400).json({ error: 'ID invalide' });
+        const item = await dbGet('SELECT * FROM menu_items WHERE id = ?', [id]);
+        if (item && item.image && item.image.startsWith('/api/image/')) {
+            const imgId = parseInt(item.image.split('/').pop());
+            if (!isNaN(imgId)) await dbRun('DELETE FROM images WHERE id = ?', [imgId]);
+        }
         await dbRun('DELETE FROM menu_items WHERE id = ?', [id]);
         res.json({ success: true });
     });
@@ -527,7 +537,7 @@ async function start() {
         if (!req.file) return res.status(400).json({ error: 'Image requise' });
         const validCategories = ['plat', 'ambiance', 'equipe', 'cuisine', 'evenement', 'desserts', 'boissons'];
         const cat = validCategories.includes(category) ? category : 'plat';
-        const image = `/uploads/${req.file.filename}`;
+        const image = await storeImage(req.file);
         const result = await dbRun('INSERT INTO gallery (title, image, category) VALUES (?, ?, ?)', [sanitize(title), image, cat]);
         res.json({ id: result.lastInsertRowid, success: true });
     });
@@ -536,12 +546,32 @@ async function start() {
         const id = parseInt(req.params.id);
         if (isNaN(id) || id < 1) return res.status(400).json({ error: 'ID invalide' });
         const item = await dbGet('SELECT * FROM gallery WHERE id = ?', [id]);
-        if (item && item.image) {
-            const filePath = path.join(__dirname, item.image);
-            if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
+        if (item) {
+            if (item.image && item.image.startsWith('/api/image/')) {
+                const imgId = parseInt(item.image.split('/').pop());
+                if (!isNaN(imgId)) await dbRun('DELETE FROM images WHERE id = ?', [imgId]);
+            } else if (item.image) {
+                const filePath = path.join(__dirname, item.image);
+                if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
+            }
         }
         await dbRun('DELETE FROM gallery WHERE id = ?', [id]);
         res.json({ success: true });
+    });
+
+    // ========== IMAGE ROUTES ==========
+    app.get('/api/image/:id', async (req, res) => {
+        const id = parseInt(req.params.id);
+        if (isNaN(id) || id < 1) return res.status(400).json({ error: 'ID invalide' });
+        const img = await dbGet('SELECT data, mime FROM images WHERE id = ?', [id]);
+        if (!img || !img.data) return res.status(404).json({ error: 'Image non trouvée' });
+        let buf = img.data;
+        if (buf instanceof ArrayBuffer) buf = Buffer.from(new Uint8Array(buf));
+        else if (ArrayBuffer.isView(buf)) buf = Buffer.from(buf.buffer, buf.byteOffset, buf.byteLength);
+        else buf = Buffer.from(buf);
+        res.setHeader('Content-Type', img.mime || 'image/jpeg');
+        res.setHeader('Cache-Control', 'public, max-age=604800');
+        res.send(buf);
     });
 
     // ========== ORDER ROUTES ==========
