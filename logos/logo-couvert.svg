@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <defs>
+    <linearGradient id="g1" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#E8A84C"/>
+      <stop offset="1" stop-color="#C17817"/>
+    </linearGradient>
+  </defs>
+  <rect width="64" height="64" rx="14" fill="url(#g1)"/>
+  <!-- Fourchette -->
+  <g stroke="#fff" stroke-width="3.2" stroke-linecap="round" fill="none">
+    <path d="M24 14v14"/>
+    <path d="M19 14v8" />
+    <path d="M29 14v8"/>
+    <path d="M24 28c1 2 0 3 0 20" stroke-width="3"/>
+  </g>
+  <!-- Couteau -->
+  <g stroke="#fff" stroke-width="3.2" stroke-linecap="round" fill="none">
+    <path d="M40 34v20" stroke-width="3"/>
+    <path d="M40 14c-3 4-6 12-6 18h12c0-6-3-14-6-18z" fill="#fff" stroke="none"/>
+    <path d="M34 32h12" stroke-width="3"/>
+  </g>
+</svg>

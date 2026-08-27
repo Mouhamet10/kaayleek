@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <defs>
+    <linearGradient id="g2" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#2D6A4F"/>
+      <stop offset="1" stop-color="#1B4332"/>
+    </linearGradient>
+  </defs>
+  <rect width="64" height="64" rx="14" fill="url(#g2)"/>
+  <!-- Bol / assiette -->
+  <path d="M16 30h32c0 12-7 20-16 20S16 42 16 30z" fill="#fff" opacity="0.95"/>
+  <!-- Vapeur -->
+  <g stroke="#F5E6CC" stroke-width="3" stroke-linecap="round" fill="none">
+    <path d="M24 22c-2-2-2-5 0-7s2-5 0-7" opacity="0.9"/>
+    <path d="M32 22c-2-2-2-5 0-7s2-5 0-7" opacity="0.9"/>
+    <path d="M40 22c-2-2-2-5 0-7s2-5 0-7" opacity="0.9"/>
+  </g>
+  <!-- Maillet / louche centrale -->
+  <ellipse cx="32" cy="32" rx="9" ry="5" fill="#C17817"/>
+</svg>

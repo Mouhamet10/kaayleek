@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <rect width="64" height="64" rx="50" fill="#C17817"/>
+  <!-- Plume de stylo / feuille, symbole fraîcheur fusion -->
+  <path d="M40 14L22 34l-4 12 12-4 20-18c2-2 2-6-2-7-2-1-6-1-8-3z" fill="#FDF6EC"/>
+  <path d="M18 46l4-8-4-2z" fill="#1B4332"/>
+</svg>
