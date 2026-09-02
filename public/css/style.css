@@ -1080,8 +1080,12 @@ h1, h2, h3, h4 { font-family: var(--font-display); font-weight: 500; line-height
    RESPONSIVE
    ============================================================ */
 @media (max-width: 1024px) {
-  .nav-links { display: none; }
-  .nav-hamburger { display: flex; }
+  /* Navigation toujours visible, compactée en ligne */
+  .nav { flex-wrap: wrap; gap: 12px 24px; }
+  .nav-links { flex: 1 1 100%; order: 3; justify-content: center; flex-wrap: wrap; gap: 6px 22px; padding-top: 10px; border-top: 1px solid rgba(255,255,255,.08); }
+  .nav-links a { font-size: .72rem; letter-spacing: .08em; }
+  .nav-links a::after { display: none; }
+  .nav-hamburger { display: none; }
   .signature-grid { grid-template-columns: repeat(3, 1fr); gap: 18px; }
   .about-grid, .chef-grid { grid-template-columns: 1fr; gap: 40px; }
   .contact-grid { grid-template-columns: 1fr; }
@@ -1107,6 +1111,10 @@ h1, h2, h3, h4 { font-family: var(--font-display); font-weight: 500; line-height
   .hero-cta { flex-direction: column; align-items: center; }
   .hero-cta .btn { width: 100%; }
   .dash-cards { grid-template-columns: 1fr; }
+  /* Navigation compacte téléphone */
+  .brand-text { font-size: .9rem; letter-spacing: .15em; }
+  .nav-links { gap: 4px 14px; padding-top: 8px; }
+  .nav-links a { font-size: .62rem; letter-spacing: .04em; }
 }
 
 /* Accessibilité : réduction des animations */
