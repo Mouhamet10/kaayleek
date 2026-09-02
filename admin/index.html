@@ -51,9 +51,7 @@
             padding: 16px 12px;
             overflow-y: auto;
         }
-        .nav-section {
-            margin-bottom: 24px;
-        }
+        .nav-section { margin-bottom: 24px; }
         .nav-section-title {
             color: rgba(255,255,255,0.3);
             font-size: 0.65rem;
@@ -101,15 +99,12 @@
             border-radius: 10px;
             font-size: 0.85rem;
             transition: all 0.2s;
+            cursor: pointer;
         }
         .sidebar-footer a:hover { background: rgba(255,255,255,0.05); color: #fff; }
 
         /* MAIN */
-        .main {
-            flex: 1;
-            margin-left: 260px;
-            min-height: 100vh;
-        }
+        .main { flex: 1; margin-left: 260px; min-height: 100vh; }
         .topbar {
             background: rgba(10,10,15,0.8);
             backdrop-filter: blur(20px);
@@ -122,18 +117,9 @@
             top: 0;
             z-index: 50;
         }
-        .topbar h1 {
-            font-size: 1.3rem;
-            font-weight: 700;
-        }
-        .topbar-right {
-            display: flex;
-            align-items: center;
-            gap: 16px;
-        }
-        .content {
-            padding: 32px;
-        }
+        .topbar h1 { font-size: 1.3rem; font-weight: 700; }
+        .topbar-right { display: flex; align-items: center; gap: 16px; }
+        .content { padding: 32px; }
 
         /* CARDS */
         .stats-grid {
@@ -166,16 +152,8 @@
         .stat-card .icon.purple { background: rgba(156,39,176,0.15); color: #9C27B0; }
         .stat-card .icon.red { background: rgba(220,53,69,0.15); color: #dc3545; }
         .stat-card .icon.teal { background: rgba(0,150,136,0.15); color: #009688; }
-        .stat-card .number {
-            font-size: 2rem;
-            font-weight: 800;
-            color: #fff;
-            margin-bottom: 4px;
-        }
-        .stat-card .label {
-            color: rgba(255,255,255,0.5);
-            font-size: 0.85rem;
-        }
+        .stat-card .number { font-size: 2rem; font-weight: 800; color: #fff; margin-bottom: 4px; }
+        .stat-card .label { color: rgba(255,255,255,0.5); font-size: 0.85rem; }
 
         /* TABLE */
         .table-container {
@@ -193,14 +171,8 @@
             gap: 12px;
             flex-wrap: wrap;
         }
-        .table-header h3 {
-            font-size: 1rem;
-            font-weight: 600;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-        }
+        .table-header h3 { font-size: 1rem; font-weight: 600; }
+        table { width: 100%; border-collapse: collapse; }
         th {
             text-align: left;
             padding: 12px 24px;
@@ -228,7 +200,12 @@
         .badge-pending { background: rgba(255,193,7,0.15); color: #ffc107; }
         .badge-confirmed { background: rgba(40,167,69,0.15); color: #28a745; }
         .badge-cancelled { background: rgba(220,53,69,0.15); color: #dc3545; }
+        .badge-refused { background: rgba(220,53,69,0.15); color: #dc3545; }
         .badge-completed { background: rgba(33,150,243,0.15); color: #2196F3; }
+        .badge-delivered { background: rgba(0,150,136,0.15); color: #009688; }
+        .badge-preparing { background: rgba(156,39,176,0.15); color: #CE93D8; }
+        .badge-approved { background: rgba(40,167,69,0.15); color: #28a745; }
+        .badge-hidden { background: rgba(255,255,255,0.1); color: #fff; }
         .btn-whatsapp {
             background: #25D366;
             color: #fff;
@@ -287,17 +264,12 @@
             border-radius: 20px;
             padding: 32px;
             width: 100%;
-            max-width: 520px;
+            max-width: 640px;
             max-height: 85vh;
             overflow-y: auto;
         }
-        .modal h3 {
-            font-size: 1.2rem;
-            margin-bottom: 24px;
-        }
-        .modal .form-group {
-            margin-bottom: 16px;
-        }
+        .modal h3 { font-size: 1.2rem; margin-bottom: 24px; }
+        .modal .form-group { margin-bottom: 16px; }
         .modal label {
             display: block;
             color: rgba(255,255,255,0.6);
@@ -316,9 +288,7 @@
             outline: none;
             font-family: inherit;
         }
-        .modal input:focus, .modal select:focus, .modal textarea:focus {
-            border-color: #C17817;
-        }
+        .modal input:focus, .modal select:focus, .modal textarea:focus { border-color: #C17817; }
         .modal textarea { resize: vertical; min-height: 80px; }
         .modal select option { background: #1a1a24; color: #fff; }
         .modal-actions {
@@ -326,6 +296,10 @@
             gap: 12px;
             justify-content: flex-end;
             margin-top: 24px;
+        }
+        .img-preview {
+            width: 90px; height: 60px; object-fit: cover; border-radius: 8px;
+            border: 1px solid rgba(255,255,255,0.1); margin-bottom: 8px;
         }
 
         /* RESPONSIVE */
@@ -354,6 +328,10 @@
         }
         .empty-state i { font-size: 2.5rem; margin-bottom: 12px; }
         .empty-state p { font-size: 0.9rem; }
+
+        .settings-grid {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px;
+        }
     </style>
 </head>
 <body>
@@ -386,19 +364,23 @@
                     <i class="fas fa-shopping-bag"></i> Commandes
                     <span class="badge" id="badgeCommandes" style="display:none"></span>
                 </a>
-                <a href="/admin/contacts" class="nav-link" data-page="contacts">
-                    <i class="fas fa-envelope"></i> Contacts
+                <a href="/admin/avis" class="nav-link" data-page="avis">
+                    <i class="fas fa-star"></i> Avis
+                    <span class="badge" id="badgeAvis" style="display:none"></span>
                 </a>
             </div>
             <div class="nav-section">
-                <div class="nav-section-title">Site</div>
+                <div class="nav-section-title">Configuration</div>
+                <a href="/admin/parametres" class="nav-link" data-page="parametres">
+                    <i class="fas fa-cog"></i> Paramètres du site
+                </a>
                 <a href="/" class="nav-link" target="_blank">
                     <i class="fas fa-globe"></i> Voir le site
                 </a>
             </div>
         </nav>
         <div class="sidebar-footer">
-            <a href="#" id="btnLogout">
+            <a id="btnLogout">
                 <i class="fas fa-sign-out-alt"></i> Déconnexion
             </a>
         </div>
@@ -426,40 +408,56 @@
     </div>
 
     <script>
-    // ========== STATE ==========
+    // ========== STATE & HELPERS ==========
     let currentPage = 'dashboard';
     let stats = {};
+    const TOKEN_KEY = 'kaayleek_admin_token';
+    const RESTAURANT_PHONE = '+221 76 296 79 19';
+
+    function token() { return localStorage.getItem(TOKEN_KEY); }
+
+    async function api(path, options = {}) {
+        const headers = Object.assign({}, options.headers || {});
+        headers['Authorization'] = 'Bearer ' + token();
+        if (options.body && !(options.body instanceof FormData)) {
+            headers['Content-Type'] = 'application/json';
+        }
+        const res = await fetch(path, Object.assign({}, options, { headers }));
+        if (res.status === 401) {
+            localStorage.removeItem(TOKEN_KEY);
+            window.location.href = '/admin/login';
+            throw new Error('Non authentifié');
+        }
+        let data = null;
+        try { data = await res.json(); } catch {}
+        if (!res.ok) throw new Error((data && data.error) || 'Erreur serveur');
+        return data;
+    }
 
     function esc(str) {
         const d = document.createElement('div');
-        d.textContent = str || '';
+        d.textContent = str == null ? '' : String(str);
         return d.innerHTML;
     }
 
     function escAttr(str) {
-        return (str || '').replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/'/g, '&#39;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-    }
-
-    function escJS(str) {
-        return (str || '').replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/"/g, '\\"').replace(/\n/g, '\\n').replace(/\r/g, '\\r');
+        return (str == null ? '' : String(str)).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/'/g, '&#39;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
     }
 
     // ========== AUTH ==========
     async function checkAuth() {
         try {
-            const res = await fetch('/api/auth/me');
-            if (res.status !== 401) {
-                const user = await res.json();
-                document.getElementById('userDisplay').textContent = user.username;
-                return user;
-            }
-        } catch {}
-        window.location.href = '/admin/login';
-        return null;
+            const user = await api('/api/auth/me');
+            document.getElementById('userDisplay').textContent =
+                user.firstname ? (user.firstname + ' ' + (user.lastname || '')) : (user.email || user.role);
+            return user;
+        } catch {
+            return null;
+        }
     }
 
-    document.getElementById('btnLogout').addEventListener('click', async () => {
-        await fetch('/api/auth/logout', { method: 'POST' });
+    document.getElementById('btnLogout').addEventListener('click', () => {
+        localStorage.removeItem(TOKEN_KEY);
         window.location.href = '/admin/login';
     });
 
@@ -494,31 +492,39 @@
     function navigate(page) {
         currentPage = page;
         document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
-        const active = document.querySelector(`.nav-link[data-page="${page}"]`);
+        const active = document.querySelector('.nav-link[data-page="' + page + '"]');
         if (active) active.classList.add('active');
         document.getElementById('sidebar').classList.remove('open');
 
-        const titles = { dashboard: 'Tableau de bord', menu: 'Menu / Plats', reservations: 'Réservations', galerie: 'Galerie', commandes: 'Commandes' };
+        const titles = {
+            dashboard: 'Tableau de bord', menu: 'Menu / Plats', reservations: 'Réservations',
+            galerie: 'Galerie', commandes: 'Commandes', avis: 'Avis', parametres: 'Paramètres du site'
+        };
         document.getElementById('pageTitle').textContent = titles[page] || page;
         renderPage(page);
     }
 
     async function renderPage(page) {
         const content = document.getElementById('pageContent');
-        switch(page) {
-            case 'dashboard': return renderDashboard(content);
-            case 'menu': return renderMenu(content);
-            case 'reservations': return renderReservations(content);
-            case 'galerie': return renderGalerie(content);
-            case 'commandes': return renderCommandes(content);
-            case 'contacts': return renderContacts(content);
+        content.innerHTML = '<div class="empty-state"><i class="fas fa-spinner fa-spin"></i><p>Chargement...</p></div>';
+        try {
+            switch(page) {
+                case 'dashboard': return renderDashboard(content);
+                case 'menu': return renderMenu(content);
+                case 'reservations': return renderReservations(content);
+                case 'galerie': return renderGalerie(content);
+                case 'commandes': return renderCommandes(content);
+                case 'avis': return renderReviews(content);
+                case 'parametres': return renderSettings(content);
+            }
+        } catch (e) {
+            content.innerHTML = '<div class="empty-state"><i class="fas fa-exclamation-triangle"></i><p>' + esc(e.message) + '</p></div>';
         }
     }
 
     // ========== DASHBOARD ==========
     async function renderDashboard(el) {
-        const res = await fetch('/api/stats');
-        stats = await res.json();
+        stats = await api('/api/admin/stats');
         if (stats.reservationsPending > 0) {
             document.getElementById('badgeReservations').textContent = stats.reservationsPending;
             document.getElementById('badgeReservations').style.display = '';
@@ -527,22 +533,27 @@
             document.getElementById('badgeCommandes').textContent = stats.ordersPending;
             document.getElementById('badgeCommandes').style.display = '';
         }
+        if (stats.reviewsPending > 0) {
+            document.getElementById('badgeAvis').textContent = stats.reviewsPending;
+            document.getElementById('badgeAvis').style.display = '';
+        }
         el.innerHTML = `
             <div class="stats-grid">
-                <div class="stat-card"><div class="icon orange"><i class="fas fa-utensils"></i></div><div class="number">${stats.menuCount}</div><div class="label">Plats au menu</div></div>
-                <div class="stat-card"><div class="icon red"><i class="fas fa-calendar-day"></i></div><div class="number">${stats.todayReservations}</div><div class="label">Réservations aujourd'hui</div></div>
-                <div class="stat-card"><div class="icon blue"><i class="fas fa-clock"></i></div><div class="number">${stats.reservationsPending}</div><div class="label">En attente</div></div>
-                <div class="stat-card"><div class="icon green"><i class="fas fa-shopping-bag"></i></div><div class="number">${stats.ordersTotal}</div><div class="label">Commandes totales</div></div>
-                <div class="stat-card"><div class="icon purple"><i class="fas fa-images"></i></div><div class="number">${stats.galleryCount}</div><div class="label">Photos galerie</div></div>
-                <div class="stat-card"><div class="icon teal"><i class="fas fa-calendar-check"></i></div><div class="number">${stats.reservationsTotal}</div><div class="label">Réservations totales</div></div>
+                <div class="stat-card"><div class="icon orange"><i class="fas fa-utensils"></i></div><div class="number">${stats.menuCount ?? 0}</div><div class="label">Plats au menu</div></div>
+                <div class="stat-card"><div class="icon red"><i class="fas fa-calendar-day"></i></div><div class="number">${stats.todayReservations ?? 0}</div><div class="label">Réservations aujourd'hui</div></div>
+                <div class="stat-card"><div class="icon blue"><i class="fas fa-clock"></i></div><div class="number">${stats.reservationsPending ?? 0}</div><div class="label">Réservations en attente</div></div>
+                <div class="stat-card"><div class="icon green"><i class="fas fa-shopping-bag"></i></div><div class="number">${stats.ordersTotal ?? 0}</div><div class="label">Commandes totales</div></div>
+                <div class="stat-card"><div class="icon teal"><i class="fas fa-truck"></i></div><div class="number">${stats.ordersToday ?? 0}</div><div class="label">Commandes aujourd'hui</div></div>
+                <div class="stat-card"><div class="icon purple"><i class="fas fa-images"></i></div><div class="number">${stats.galleryCount ?? 0}</div><div class="label">Photos galerie</div></div>
+                <div class="stat-card"><div class="icon orange"><i class="fas fa-star"></i></div><div class="number">${stats.dishesAvailable ?? 0}</div><div class="label">Plats disponibles</div></div>
+                <div class="stat-card"><div class="icon red"><i class="fas fa-calendar-check"></i></div><div class="number">${stats.reservationsTotal ?? 0}</div><div class="label">Réservations totales</div></div>
             </div>
         `;
     }
 
-    // ========== MENU ==========
+    // ========== MENU (PLATS) ==========
     async function renderMenu(el) {
-        const res = await fetch('/api/menu');
-        const items = await res.json();
+        const items = await api('/api/dishes/all');
         el.innerHTML = `
             <div class="table-container">
                 <div class="table-header">
@@ -550,14 +561,15 @@
                     <button class="btn btn-primary" onclick="showMenuModal()"><i class="fas fa-plus"></i> Ajouter</button>
                 </div>
                 <table>
-                    <thead><tr><th>Nom</th><th>Catégorie</th><th>Prix</th><th>État</th><th>Actions</th></tr></thead>
+                    <thead><tr><th>Image</th><th>Nom</th><th>Catégorie</th><th>Prix</th><th>État</th><th>Actions</th></tr></thead>
                     <tbody>
-                        ${items.length === 0 ? '<tr><td colspan="5"><div class="empty-state"><i class="fas fa-utensils"></i><p>Aucun plat</p></div></td></tr>' : ''}
+                        ${items.length === 0 ? '<tr><td colspan="6"><div class="empty-state"><i class="fas fa-utensils"></i><p>Aucun plat</p></div></td></tr>' : ''}
                         ${items.map(i => `
                             <tr>
+                                <td>${i.image ? '<img src="' + escAttr(i.image) + '" style="width:70px;height:46px;object-fit:cover;border-radius:8px">' : '<span style="color:rgba(255,255,255,0.3)">—</span>'}</td>
                                 <td><strong>${esc(i.name)}</strong></td>
                                 <td>${esc(i.category)}</td>
-                                <td><strong>${i.price.toLocaleString()} FCFA</strong></td>
+                                <td><strong>${Number(i.price).toLocaleString()} FCFA</strong></td>
                                 <td>${i.available ? '<span class="badge-status badge-confirmed">Disponible</span>' : '<span class="badge-status badge-cancelled">Indisponible</span>'}</td>
                                 <td>
                                     <button class="btn btn-ghost btn-sm btn-edit-menu" data-item='${escAttr(JSON.stringify(i))}'><i class="fas fa-edit"></i></button>
@@ -571,34 +583,32 @@
         `;
     }
 
+    async function uploadImage(file) {
+        if (!file) return null;
+        const fd = new FormData();
+        fd.append('image', file);
+        const data = await api('/api/upload', { method: 'POST', body: fd });
+        return data.url;
+    }
+
     function showMenuModal(item = null) {
         openModal(`
             <h3>${item ? 'Modifier' : 'Ajouter'} un plat</h3>
-            <form id="menuForm" enctype="multipart/form-data">
+            <form id="menuForm">
+                ${item && item.image ? '<img src="' + escAttr(item.image) + '" class="img-preview">' : ''}
                 <div class="form-group"><label>Nom</label><input name="name" value="${esc(item?.name||'')}" required></div>
                 <div class="form-group"><label>Description</label><textarea name="description">${esc(item?.description||'')}</textarea></div>
                 <div class="form-group"><label>Prix (FCFA)</label><input type="number" name="price" value="${item?.price||''}" required></div>
-                <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
-                    <div class="form-group"><label>Catégorie</label>
-                        <select name="category">
-                            <option value="entrees" ${item?.category==='entrees'?'selected':''}>Entrées</option>
-                            <option value="plats-occidentaux" ${item?.category==='plats-occidentaux'?'selected':''}>Plats Occidentaux</option>
-                            <option value="plats-senegalais" ${item?.category==='plats-senegalais'?'selected':''}>Plats Sénégalais</option>
-                            <option value="desserts" ${item?.category==='desserts'?'selected':''}>Desserts</option>
-                            <option value="boissons" ${item?.category==='boissons'?'selected':''}>Boissons</option>
-                        </select>
-                    </div>
-                    <div class="form-group"><label>Type</label>
-                        <select name="type">
-                            <option value="occidental" ${item?.type==='occidental'?'selected':''}>Occidental</option>
-                            <option value="senegalais" ${item?.type==='senegalais'?'selected':''}>Sénégalais</option>
-                            <option value="fusion" ${item?.type==='fusion'?'selected':''}>Fusion</option>
-                        </select>
-                    </div>
+                <div class="form-group"><label>Catégorie</label>
+                    <select name="category">
+                        <option value="entree" ${item?.category==='entree'?'selected':''}>Entrée</option>
+                        <option value="plat" ${(!item || item.category==='plat')?'selected':''}>Plat</option>
+                        <option value="dessert" ${item?.category==='dessert'?'selected':''}>Dessert</option>
+                        <option value="boisson" ${item?.category==='boisson'?'selected':''}>Boisson</option>
+                    </select>
                 </div>
-                <div class="form-group"><label>Image</label><input type="file" name="image" accept="image/*"></div>
-                <div class="form-group"><label>Allergènes (séparés par virgules)</label><input name="allergens" value="${esc(item?.allergens||'')}" placeholder="ex: Gluten, Lait, Fruits à coque"></div>
-                ${item ? `<div class="form-group"><label><input type="checkbox" name="available" value="1" ${item.available?'checked':''}> Disponible</label></div>` : ''}
+                <div class="form-group"><label>Image (optionnel)</label><input type="file" name="image" accept="image/*"></div>
+                <div class="form-group"><label><input type="checkbox" name="available" value="1" ${item && !item.available ? '' : 'checked'}> Disponible</label></div>
                 <div class="modal-actions">
                     <button type="button" class="btn btn-ghost" onclick="closeModal()">Annuler</button>
                     <button type="submit" class="btn btn-primary">${item ? 'Modifier' : 'Ajouter'}</button>
@@ -607,106 +617,62 @@
         `);
         document.getElementById('menuForm').addEventListener('submit', async (e) => {
             e.preventDefault();
-            const fd = new FormData(e.target);
-            if (!fd.has('available')) fd.append('available', '0');
-            const url = item ? `/api/menu/${item.id}` : '/api/menu';
-            const method = item ? 'PUT' : 'POST';
-            const res = await fetch(url, { method, body: fd });
-            const data = await res.json();
-            if (data.success) { closeModal(); toast(item ? 'Plat modifié' : 'Plat ajouté'); renderPage('menu'); }
-            else toast(data.error || 'Erreur', 'error');
+            const btn = e.target.querySelector('[type="submit"]');
+            btn.disabled = true;
+            try {
+                const f = new FormData(e.target);
+                const payload = {
+                    name: f.get('name'),
+                    description: f.get('description') || null,
+                    price: Number(f.get('price')),
+                    category: f.get('category'),
+                    available: f.get('available') ? 1 : 0
+                };
+                const file = f.get('image');
+                if (file && file.size) {
+                    const uploaded = await uploadImage(file);
+                    if (uploaded) payload.image = uploaded;
+                } else if (item && item.image) {
+                    payload.image = item.image;
+                }
+                if (item) {
+                    await api('/api/dishes/' + item.id, { method: 'PUT', body: JSON.stringify(payload) });
+                    toast('Plat modifié');
+                } else {
+                    await api('/api/dishes', { method: 'POST', body: JSON.stringify(payload) });
+                    toast('Plat ajouté');
+                }
+                closeModal();
+                renderPage('menu');
+            } catch (err) {
+                toast(err.message, 'error');
+                btn.disabled = false;
+            }
         });
     }
 
     async function deleteMenu(id) {
         if (!confirm('Supprimer ce plat ?')) return;
-        const res = await fetch(`/api/menu/${id}`, { method: 'DELETE' });
-        const data = await res.json();
-        if (data.success) { toast('Plat supprimé'); renderPage('menu'); }
+        try {
+            await api('/api/dishes/' + id, { method: 'DELETE' });
+            toast('Plat supprimé');
+            renderPage('menu');
+        } catch (e) { toast(e.message, 'error'); }
     }
 
-    // Event delegation for menu buttons
-    document.addEventListener('click', (e) => {
-        const editBtn = e.target.closest('.btn-edit-menu');
-        if (editBtn) {
-            try {
-                const item = JSON.parse(editBtn.dataset.item);
-                showMenuModal(item);
-            } catch {}
-        }
-        const deleteBtn = e.target.closest('.btn-delete-menu');
-        if (deleteBtn) {
-            deleteMenu(parseInt(deleteBtn.dataset.id));
-        }
-        const confirmResBtn = e.target.closest('.btn-confirm-res');
-        if (confirmResBtn) {
-            updateReservation(
-                parseInt(confirmResBtn.dataset.id), 'confirmed',
-                confirmResBtn.dataset.phone, confirmResBtn.dataset.name,
-                confirmResBtn.dataset.date, confirmResBtn.dataset.time,
-                parseInt(confirmResBtn.dataset.guests)
-            );
-        }
-        const cancelResBtn = e.target.closest('.btn-cancel-res');
-        if (cancelResBtn) {
-            updateReservation(
-                parseInt(cancelResBtn.dataset.id), 'cancelled',
-                cancelResBtn.dataset.phone, cancelResBtn.dataset.name,
-                cancelResBtn.dataset.date, cancelResBtn.dataset.time,
-                parseInt(cancelResBtn.dataset.guests)
-            );
-        }
-        const confirmOrdBtn = e.target.closest('.btn-confirm-ord');
-        if (confirmOrdBtn) {
-            updateOrder(
-                parseInt(confirmOrdBtn.dataset.id), 'confirmed',
-                confirmOrdBtn.dataset.phone, confirmOrdBtn.dataset.items,
-                parseInt(confirmOrdBtn.dataset.total), confirmOrdBtn.dataset.name
-            );
-        }
-        const cancelOrdBtn = e.target.closest('.btn-cancel-ord');
-        if (cancelOrdBtn) {
-            updateOrder(
-                parseInt(cancelOrdBtn.dataset.id), 'cancelled',
-                cancelOrdBtn.dataset.phone, cancelOrdBtn.dataset.items,
-                parseInt(cancelOrdBtn.dataset.total), cancelOrdBtn.dataset.name
-            );
-        }
-        const completeOrdBtn = e.target.closest('.btn-complete-ord');
-        if (completeOrdBtn) {
-            updateOrder(
-                parseInt(completeOrdBtn.dataset.id), 'completed',
-                completeOrdBtn.dataset.phone, completeOrdBtn.dataset.items,
-                parseInt(completeOrdBtn.dataset.total), completeOrdBtn.dataset.name
-            );
-        }
-        const deleteResBtn = e.target.closest('.btn-delete-res');
-        if (deleteResBtn) {
-            deleteReservation(parseInt(deleteResBtn.dataset.id));
-        }
-        const deleteOrdBtn = e.target.closest('.btn-delete-ord');
-        if (deleteOrdBtn) {
-            deleteOrder(parseInt(deleteOrdBtn.dataset.id));
-        }
-        const deleteGalBtn = e.target.closest('.btn-delete-gal');
-        if (deleteGalBtn) {
-            deleteGallery(parseInt(deleteGalBtn.dataset.id));
-        }
-        const deleteConBtn = e.target.closest('.btn-delete-con');
-        if (deleteConBtn) {
-            deleteContact(parseInt(deleteConBtn.dataset.id));
-        }
-    });
-
     // ========== RESERVATIONS ==========
+    const RES_LABELS = {
+        pending: 'En attente', confirmed: 'Confirmée', refused: 'Refusée',
+        completed: 'Terminée', cancelled: 'Annulée'
+    };
+
     async function renderReservations(el) {
-        const res = await fetch('/api/reservations');
-        const items = await res.json();
+        const items = await api('/api/reservations');
         el.innerHTML = `
             <div class="table-container">
                 <div class="table-header"><h3>${items.length} réservation${items.length>1?'s':''}</h3></div>
                 <table>
-                    <thead><tr><th>Client</th><th>Date</th><th>Heure</th><th>Convives</th><th>Occasion</th><th>État</th><th>Actions</th></tr></thead>
+                    <thead><tr><th>Client</th><th>Date</th><th>Heure</th><th>Convives</th><th>Demandes</th><th>État</th><th>Actions</th></tr></thead>
                     <tbody>
                         ${items.length === 0 ? '<tr><td colspan="7"><div class="empty-state"><i class="fas fa-calendar"></i><p>Aucune réservation</p></div></td></tr>' : ''}
                         ${items.map(i => {
@@ -717,16 +683,16 @@
                                 <td><strong>${esc(i.name)}</strong><br><small style="color:rgba(255,255,255,0.4)">${esc(i.phone)}</small></td>
                                 <td>${esc(i.date)}</td>
                                 <td>${esc(i.time)}</td>
-                                <td>${i.guests}</td>
-                                <td>${esc(i.occasion || '-')}</td>
-                                <td><span class="badge-status badge-${esc(i.status)}">${i.status === 'pending' ? 'En attente' : i.status === 'confirmed' ? 'Confirmée' : i.status === 'cancelled' ? 'Annulée' : esc(i.status)}</span></td>
+                                <td>${i.people}</td>
+                                <td><small>${esc(i.special_requests || '-')}</small></td>
+                                <td><span class="badge-status badge-${esc(i.status)}">${esc(RES_LABELS[i.status] || i.status)}</span></td>
                                 <td>
                                     <div class="action-group">
                                         ${i.status === 'pending' ? `
-                                            <button class="btn btn-success btn-sm btn-confirm-res" data-id="${i.id}" data-phone="${escAttr(phone)}" data-name="${escAttr(i.name)}" data-date="${escAttr(i.date)}" data-time="${escAttr(i.time)}" data-guests="${i.guests}"><i class="fas fa-check"></i></button>
-                                            <button class="btn btn-danger btn-sm btn-cancel-res" data-id="${i.id}" data-phone="${escAttr(phone)}" data-name="${escAttr(i.name)}" data-date="${escAttr(i.date)}" data-time="${escAttr(i.time)}" data-guests="${i.guests}"><i class="fas fa-times"></i></button>
+                                            <button class="btn btn-success btn-sm btn-confirm-res" data-id="${i.id}" data-phone="${escAttr(phone)}" data-name="${escAttr(i.name)}" data-date="${escAttr(i.date)}" data-time="${escAttr(i.time)}" data-guests="${i.people}"><i class="fas fa-check"></i></button>
+                                            <button class="btn btn-danger btn-sm btn-cancel-res" data-id="${i.id}" data-phone="${escAttr(phone)}" data-name="${escAttr(i.name)}" data-date="${escAttr(i.date)}" data-time="${escAttr(i.time)}" data-guests="${i.people}"><i class="fas fa-times"></i></button>
                                         ` : ''}
-                                        ${phone ? `<a href="https://wa.me/${escAttr(phone)}?text=${encodeURIComponent('Bonjour ' + i.name + ' ! Concernant votre réservation du ' + i.date + ' à ' + i.time + ' pour ' + i.guests + ' convive(s)' + (i.occasion ? ' (' + i.occasion + ')' : '') + ' :\n\nKaayLeek 🍽️\n📞 +221 76 296 79 19')} " target="_blank" class="btn-whatsapp" title="Envoyer un message WhatsApp"><i class="fab fa-whatsapp"></i></a>` : ''}
+                                        ${phone ? `<a href="https://wa.me/${escAttr(phone)}?text=${encodeURIComponent('Bonjour ' + i.name + ' ! Concernant votre réservation du ' + i.date + ' à ' + i.time + ' pour ' + i.people + ' convive(s)' + (i.special_requests ? ' (' + i.special_requests + ')' : '') + ' :\n\nKaayLeek 🍽️\n📞 ' + RESTAURANT_PHONE)}" target="_blank" class="btn-whatsapp" title="Envoyer un message WhatsApp"><i class="fab fa-whatsapp"></i></a>` : ''}
                                         <button class="btn btn-danger btn-sm btn-delete-res" data-id="${i.id}"><i class="fas fa-trash"></i></button>
                                     </div>
                                 </td>
@@ -739,31 +705,34 @@
     }
 
     async function updateReservation(id, status, phone, name, date, time, guests) {
-        await fetch(`/api/reservations/${id}`, { method: 'PUT', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ status }) });
-        toast('Réservation mise à jour');
-        renderPage('reservations');
-        if (phone && status !== 'pending') {
-            const messages = {
-                confirmed: 'Bonjour ' + name + ' ! Votre réservation du ' + date + ' à ' + time + ' pour ' + guests + ' convive(s) a été confirmée ✅. Merci et à bientôt !\n\nKaayLeek 🍽️\n📞 +221 76 296 79 19',
-                cancelled: 'Désolé ' + name + ', votre réservation du ' + date + ' à ' + time + ' a été annulée ❌. Contactez-nous pour plus d\'infos.\n\nKaayLeek 🍽️\n📞 +221 76 296 79 19'
-            };
-            if (messages[status]) {
-                window.open('https://wa.me/' + phone + '?text=' + encodeURIComponent(messages[status]), '_blank');
+        try {
+            await api('/api/reservations/' + id + '/status', { method: 'PUT', body: JSON.stringify({ status }) });
+            toast('Réservation mise à jour');
+            renderPage('reservations');
+            if (phone) {
+                const messages = {
+                    confirmed: 'Bonjour ' + name + ' ! Votre réservation du ' + date + ' à ' + time + ' pour ' + guests + ' convive(s) a été confirmée ✅. Merci et à bientôt !\n\nKaayLeek 🍽️\n📞 ' + RESTAURANT_PHONE,
+                    cancelled: 'Désolé ' + name + ', votre réservation du ' + date + ' à ' + time + ' a été annulée ❌. Contactez-nous pour plus d\'infos.\n\nKaayLeek 🍽️\n📞 ' + RESTAURANT_PHONE
+                };
+                if (messages[status]) {
+                    window.open('https://wa.me/' + phone + '?text=' + encodeURIComponent(messages[status]), '_blank');
+                }
             }
-        }
+        } catch (e) { toast(e.message, 'error'); }
     }
 
     async function deleteReservation(id) {
         if (!confirm('Supprimer cette réservation ?')) return;
-        await fetch(`/api/reservations/${id}`, { method: 'DELETE' });
-        toast('Réservation supprimée');
-        renderPage('reservations');
+        try {
+            await api('/api/reservations/' + id, { method: 'DELETE' });
+            toast('Réservation supprimée');
+            renderPage('reservations');
+        } catch (e) { toast(e.message, 'error'); }
     }
 
     // ========== GALERIE ==========
     async function renderGalerie(el) {
-        const res = await fetch('/api/gallery');
-        const items = await res.json();
+        const items = await api('/api/admin/gallery');
         el.innerHTML = `
             <div class="table-container">
                 <div class="table-header">
@@ -774,10 +743,10 @@
                     ${items.length === 0 ? '<div class="empty-state" style="grid-column:1/-1"><i class="fas fa-images"></i><p>Aucune photo</p></div>' : ''}
                     ${items.map(i => `
                         <div style="position:relative;border-radius:12px;overflow:hidden;border:1px solid rgba(255,255,255,0.06)">
-                            <img src="${esc(i.image)}" alt="${esc(i.title)}" style="width:100%;height:160px;object-fit:cover">
+                            <img src="${esc(i.image)}" alt="${esc(i.caption || '')}" style="width:100%;height:160px;object-fit:cover">
                             <div style="padding:10px">
-                                <div style="font-size:0.85rem;font-weight:600">${esc(i.title)}</div>
-                                <div style="font-size:0.75rem;color:rgba(255,255,255,0.4)">${esc(i.category)}</div>
+                                <div style="font-size:0.85rem;font-weight:600">${esc(i.caption || 'Sans titre')}</div>
+                                <div style="font-size:0.75rem;color:rgba(255,255,255,0.4)">${esc(i.tag || '')}</div>
                             </div>
                             <button class="btn-delete-gal" data-id="${i.id}" style="position:absolute;top:8px;right:8px;background:rgba(0,0,0,0.7);border:none;color:#fff;width:28px;height:28px;border-radius:50%;cursor:pointer"><i class="fas fa-trash" style="font-size:0.7rem"></i></button>
                         </div>
@@ -790,10 +759,10 @@
     function showGalerieModal() {
         openModal(`
             <h3>Ajouter une photo</h3>
-            <form id="galerieForm" enctype="multipart/form-data">
-                <div class="form-group"><label>Titre</label><input name="title" required></div>
-                <div class="form-group"><label>Catégorie</label>
-                    <select name="category">
+            <form id="galerieForm">
+                <div class="form-group"><label>Titre / légende</label><input name="caption" required></div>
+                <div class="form-group"><label>Catégorie (tag)</label>
+                    <select name="tag">
                         <option value="plat">Plat</option>
                         <option value="ambiance">Ambiance</option>
                         <option value="equipe">Équipe</option>
@@ -809,54 +778,70 @@
         `);
         document.getElementById('galerieForm').addEventListener('submit', async (e) => {
             e.preventDefault();
-            const fd = new FormData(e.target);
-            const res = await fetch('/api/gallery', { method: 'POST', body: fd });
-            const data = await res.json();
-            if (data.success) { closeModal(); toast('Photo ajoutée'); renderPage('galerie'); }
-            else toast(data.error || 'Erreur', 'error');
+            const btn = e.target.querySelector('[type="submit"]');
+            btn.disabled = true;
+            try {
+                const f = new FormData(e.target);
+                const file = f.get('image');
+                if (!file) { toast('Image requise', 'error'); btn.disabled = false; return; }
+                const uploaded = await uploadImage(file);
+                await api('/api/admin/gallery', { method: 'POST', body: JSON.stringify({
+                    image: uploaded, caption: f.get('caption'), tag: f.get('tag')
+                }) });
+                closeModal();
+                toast('Photo ajoutée');
+                renderPage('galerie');
+            } catch (err) { toast(err.message, 'error'); btn.disabled = false; }
         });
     }
 
     async function deleteGallery(id) {
         if (!confirm('Supprimer cette photo ?')) return;
-        await fetch(`/api/gallery/${id}`, { method: 'DELETE' });
-        toast('Photo supprimée');
-        renderPage('galerie');
+        try {
+            await api('/api/admin/gallery/' + id, { method: 'DELETE' });
+            toast('Photo supprimée');
+            renderPage('galerie');
+        } catch (e) { toast(e.message, 'error'); }
     }
 
     // ========== COMMANDES ==========
+    const ORD_LABELS = {
+        pending: 'En attente', confirmed: 'Confirmée', preparing: 'En préparation',
+        delivered: 'Livrée', completed: 'Terminée', cancelled: 'Annulée'
+    };
+
     async function renderCommandes(el) {
-        const res = await fetch('/api/orders');
-        const items = await res.json();
+        const items = await api('/api/orders');
         el.innerHTML = `
             <div class="table-container">
                 <div class="table-header"><h3>${items.length} commande${items.length>1?'s':''}</h3></div>
                 <table>
-                    <thead><tr><th>#</th><th>Client</th><th>Téléphone</th><th>Articles</th><th>Total</th><th>État</th><th>Actions</th></tr></thead>
+                    <thead><tr><th>#</th><th>Client</th><th>Téléphone</th><th>Type</th><th>Articles</th><th>Total</th><th>État</th><th>Actions</th></tr></thead>
                     <tbody>
-                        ${items.length === 0 ? '<tr><td colspan="7"><div class="empty-state"><i class="fas fa-shopping-bag"></i><p>Aucune commande</p></div></td></tr>' : ''}
+                        ${items.length === 0 ? '<tr><td colspan="8"><div class="empty-state"><i class="fas fa-shopping-bag"></i><p>Aucune commande</p></div></td></tr>' : ''}
                         ${items.map(i => {
                             let parsedItems = [];
-                            try { parsedItems = JSON.parse(i.items); } catch {}
-                            const rawPhone = (i.customer_phone || '').replace(/[^0-9]/g, '');
+                            try { parsedItems = Array.isArray(i.items) ? i.items : JSON.parse(i.items); } catch { parsedItems = []; }
+                            const rawPhone = (i.phone || '').replace(/[^0-9]/g, '');
                             const phone = rawPhone.startsWith('221') ? rawPhone : '221' + rawPhone;
                             const itemNames = parsedItems.map(x => x.name + ' x' + x.qty).join(', ') || '-';
                             return `
                             <tr>
                                 <td>#${i.id}</td>
                                 <td><strong>${esc(i.customer_name)}</strong></td>
-                                <td>${esc(i.customer_phone)}</td>
-                                <td>${esc(itemNames)}</td>
-                                <td><strong>${i.total.toLocaleString()} FCFA</strong></td>
-                                <td><span class="badge-status badge-${esc(i.status)}">${i.status === 'pending' ? 'En attente' : i.status === 'confirmed' ? 'Confirmée' : i.status === 'completed' ? 'Livrée' : i.status === 'cancelled' ? 'Annulée' : esc(i.status)}</span></td>
+                                <td>${esc(i.phone)}</td>
+                                <td>${i.type === 'delivery' ? 'Livraison' : 'Retrait'}</td>
+                                <td><small>${esc(itemNames)}</small></td>
+                                <td><strong>${Number(i.total || i.subtotal).toLocaleString()} FCFA</strong></td>
+                                <td><span class="badge-status badge-${esc(i.status)}">${esc(ORD_LABELS[i.status] || i.status)}</span></td>
                                 <td>
                                     <div class="action-group">
                                         ${i.status === 'pending' ? `
-                                            <button class="btn btn-success btn-sm btn-confirm-ord" data-id="${i.id}" data-phone="${escAttr(phone)}" data-items="${escAttr(itemNames)}" data-total="${i.total}" data-name="${escAttr(i.customer_name)}"><i class="fas fa-check"></i></button>
-                                            <button class="btn btn-danger btn-sm btn-cancel-ord" data-id="${i.id}" data-phone="${escAttr(phone)}" data-items="${escAttr(itemNames)}" data-total="${i.total}" data-name="${escAttr(i.customer_name)}"><i class="fas fa-times"></i></button>
+                                            <button class="btn btn-success btn-sm btn-confirm-ord" data-id="${i.id}" data-phone="${escAttr(phone)}" data-items="${escAttr(itemNames)}" data-total="${i.total || i.subtotal}" data-name="${escAttr(i.customer_name)}"><i class="fas fa-check"></i></button>
+                                            <button class="btn btn-danger btn-sm btn-cancel-ord" data-id="${i.id}" data-phone="${escAttr(phone)}" data-items="${escAttr(itemNames)}" data-total="${i.total || i.subtotal}" data-name="${escAttr(i.customer_name)}"><i class="fas fa-times"></i></button>
                                         ` : ''}
-                                        ${i.status === 'confirmed' ? `<button class="btn btn-primary btn-sm btn-complete-ord" data-id="${i.id}" data-phone="${escAttr(phone)}" data-items="${escAttr(itemNames)}" data-total="${i.total}" data-name="${escAttr(i.customer_name)}"><i class="fas fa-truck"></i></button>` : ''}
-                                        ${phone ? `<a href="https://wa.me/${escAttr(phone)}?text=${encodeURIComponent('Bonjour ' + i.customer_name + ' ! Concernant votre commande #' + i.id + ' (' + itemNames + ' - ' + i.total.toLocaleString() + ' FCFA) :\n\nKaayLeek 🍽️\n📞 +221 76 296 79 19')} " target="_blank" class="btn-whatsapp" title="Envoyer un message WhatsApp"><i class="fab fa-whatsapp"></i></a>` : ''}
+                                        ${i.status === 'confirmed' ? `<button class="btn btn-primary btn-sm btn-complete-ord" data-id="${i.id}" data-phone="${escAttr(phone)}" data-items="${escAttr(itemNames)}" data-total="${i.total || i.subtotal}" data-name="${escAttr(i.customer_name)}"><i class="fas fa-truck"></i></button>` : ''}
+                                        ${phone ? `<a href="https://wa.me/${escAttr(phone)}?text=${encodeURIComponent('Bonjour ' + i.customer_name + ' ! Concernant votre commande #' + i.id + ' (' + itemNames + ' - ' + (i.total||i.subtotal).toLocaleString() + ' FCFA) :\n\nKaayLeek 🍽️\n📞 ' + RESTAURANT_PHONE)}" target="_blank" class="btn-whatsapp" title="Envoyer un message WhatsApp"><i class="fab fa-whatsapp"></i></a>` : ''}
                                         <button class="btn btn-danger btn-sm btn-delete-ord" data-id="${i.id}"><i class="fas fa-trash"></i></button>
                                     </div>
                                 </td>
@@ -869,52 +854,56 @@
     }
 
     async function updateOrder(id, status, phone, itemNames, total, customerName) {
-        await fetch(`/api/orders/${id}`, { method: 'PUT', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ status }) });
-        toast('Commande mise à jour');
-        renderPage('commandes');
-        if (phone && status !== 'pending') {
-            const messages = {
-                confirmed: 'Bonjour ' + (customerName || '') + '! Votre commande #' + id + ' (' + itemNames + ' - ' + total.toLocaleString() + ' FCFA) a été confirmée ✅. Merci pour votre confiance !\n\nKaayLeek 🍽️\n📞 +221 76 296 79 19',
-                completed: 'Votre commande #' + id + ' est en route de livraison 🚚. Merci de patienter !\n\nKaayLeek 🍽️\n📞 +221 76 296 79 19',
-                cancelled: 'Désolé ' + (customerName || '') + ', votre commande #' + id + ' (' + itemNames + ') a été annulée ❌. Contactez-nous pour plus d\'infos.\n\nKaayLeek 🍽️\n📞 +221 76 296 79 19'
-            };
-            if (messages[status]) {
-                window.open('https://wa.me/' + phone + '?text=' + encodeURIComponent(messages[status]), '_blank');
+        try {
+            await api('/api/orders/' + id + '/status', { method: 'PUT', body: JSON.stringify({ status }) });
+            toast('Commande mise à jour');
+            renderPage('commandes');
+            if (phone && status !== 'pending') {
+                const messages = {
+                    confirmed: 'Bonjour ' + (customerName || '') + '! Votre commande #' + id + ' (' + itemNames + ' - ' + total.toLocaleString() + ' FCFA) a été confirmée ✅. Merci pour votre confiance !\n\nKaayLeek 🍽️\n📞 ' + RESTAURANT_PHONE,
+                    completed: 'Votre commande #' + id + ' est en route de livraison 🚚. Merci de patienter !\n\nKaayLeek 🍽️\n📞 ' + RESTAURANT_PHONE,
+                    cancelled: 'Désolé ' + (customerName || '') + ', votre commande #' + id + ' (' + itemNames + ') a été annulée ❌. Contactez-nous pour plus d\'infos.\n\nKaayLeek 🍽️\n📞 ' + RESTAURANT_PHONE
+                };
+                if (messages[status]) {
+                    window.open('https://wa.me/' + phone + '?text=' + encodeURIComponent(messages[status]), '_blank');
+                }
             }
-        }
+        } catch (e) { toast(e.message, 'error'); }
     }
 
     async function deleteOrder(id) {
         if (!confirm('Supprimer cette commande ?')) return;
-        await fetch(`/api/orders/${id}`, { method: 'DELETE' });
-        toast('Commande supprimée');
-        renderPage('commandes');
+        try {
+            await api('/api/orders/' + id, { method: 'DELETE' });
+            toast('Commande supprimée');
+            renderPage('commandes');
+        } catch (e) { toast(e.message, 'error'); }
     }
 
-    // ========== CONTACTS ==========
-    async function renderContacts(el) {
-        const res = await fetch('/api/contacts');
-        const items = await res.json();
+    // ========== AVIS ==========
+    const REV_LABELS = { pending: 'En attente', approved: 'Approuvé', hidden: 'Masqué' };
+
+    async function renderReviews(el) {
+        const items = await api('/api/reviews/all');
         el.innerHTML = `
             <div class="table-container">
-                <div class="table-header"><h3>${items.length} message${items.length>1?'s':''}</h3></div>
+                <div class="table-header"><h3>${items.length} avis</h3></div>
                 <table>
-                    <thead><tr><th>#</th><th>Nom</th><th>Email</th><th>Sujet</th><th>Message</th><th>Date</th><th>Actions</th></tr></thead>
+                    <thead><tr><th>Client</th><th>Plat</th><th>Note</th><th>Commentaire</th><th>État</th><th>Actions</th></tr></thead>
                     <tbody>
-                        ${items.length === 0 ? '<tr><td colspan="7"><div class="empty-state"><i class="fas fa-envelope"></i><p>Aucun message</p></div></td></tr>' : ''}
+                        ${items.length === 0 ? '<tr><td colspan="6"><div class="empty-state"><i class="fas fa-star"></i><p>Aucun avis</p></div></td></tr>' : ''}
                         ${items.map(i => `
                             <tr>
-                                <td>#${i.id}</td>
-                                <td><strong>${esc(i.name)}</strong></td>
-                                <td>${esc(i.email)}</td>
-                                <td>${esc(i.subject || '-')}</td>
-                                <td><small>${esc(i.message.length > 80 ? i.message.substring(0, 80) + '...' : i.message)}</small></td>
-                                <td><small>${i.created_at}</small></td>
+                                <td><strong>${esc(i.firstname + ' ' + (i.lastname || ''))}</strong><br><small style="color:rgba(255,255,255,0.4)">${esc(i.email || '')}</small></td>
+                                <td>${esc(i.dish_name)}</td>
+                                <td><strong style="color:#ffc107">${i.rating}★</strong></td>
+                                <td><small>${esc(i.comment || '-')}</small></td>
+                                <td><span class="badge-status badge-${esc(i.status)}">${esc(REV_LABELS[i.status] || i.status)}</span></td>
                                 <td>
                                     <div class="action-group">
-                                        <a href="mailto:${esc(i.email)}?subject=Re: ${encodeURIComponent(i.subject || 'Votre message KaayLeek')}" class="btn btn-primary btn-sm" title="Répondre par email"><i class="fas fa-reply"></i></a>
-                                        <a href="https://wa.me/?text=${encodeURIComponent('Bonjour ' + i.name + ',\n\nConcernant votre message "' + (i.subject || '') + '" :\n\nKaayLeek 🍽️\n📞 +221 76 296 79 19')}" target="_blank" class="btn-whatsapp" title="Envoyer un message WhatsApp"><i class="fab fa-whatsapp"></i></a>
-                                        <button class="btn btn-danger btn-sm btn-delete-con" data-id="${i.id}"><i class="fas fa-trash"></i></button>
+                                        ${i.status !== 'approved' ? `<button class="btn btn-success btn-sm btn-approve-rev" data-id="${i.id}"><i class="fas fa-check"></i></button>` : ''}
+                                        ${i.status !== 'hidden' ? `<button class="btn btn-ghost btn-sm btn-hide-rev" data-id="${i.id}"><i class="fas fa-eye-slash"></i></button>` : ''}
+                                        <button class="btn btn-danger btn-sm btn-delete-rev" data-id="${i.id}"><i class="fas fa-trash"></i></button>
                                     </div>
                                 </td>
                             </tr>
@@ -925,12 +914,151 @@
         `;
     }
 
-    async function deleteContact(id) {
-        if (!confirm('Supprimer ce message ?')) return;
-        await fetch(`/api/contacts/${id}`, { method: 'DELETE' });
-        toast('Message supprimé');
-        renderPage('contacts');
+    async function updateReviewStatus(id, status) {
+        try {
+            await api('/api/reviews/' + id + '/status', { method: 'PUT', body: JSON.stringify({ status }) });
+            toast('Avis mis à jour');
+            renderPage('avis');
+        } catch (e) { toast(e.message, 'error'); }
     }
+
+    async function deleteReview(id) {
+        if (!confirm('Supprimer cet avis ?')) return;
+        try {
+            await api('/api/reviews/' + id, { method: 'DELETE' });
+            toast('Avis supprimé');
+            renderPage('avis');
+        } catch (e) { toast(e.message, 'error'); }
+    }
+
+    // ========== PARAMÈTRES ==========
+    async function renderSettings(el) {
+        const s = await api('/api/admin/settings');
+        el.innerHTML = `
+            <form id="settingsForm">
+            <div class="settings-grid">
+                <div class="table-container">
+                    <div class="table-header"><h3>🍽️ Restaurant</h3></div>
+                    <div style="padding:24px">
+                        <div class="form-group"><label>Nom du site</label><input name="site.name" value="${esc(s['site.name'] || '')}"></div>
+                        <div class="form-group"><label>Slogan</label><input name="site.slogan" value="${esc(s['site.slogan'] || '')}"></div>
+                        <div class="form-group"><label>Adresse</label><input name="site.address" value="${esc(s['site.address'] || '')}"></div>
+                        <div class="form-group"><label>Ville</label><input name="site.city" value="${esc(s['site.city'] || '')}"></div>
+                        <div class="form-group"><label>Téléphone</label><input name="site.phone" value="${esc(s['site.phone'] || '')}"></div>
+                        <div class="form-group"><label>Email</label><input name="site.email" value="${esc(s['site.email'] || '')}"></div>
+                    </div>
+                </div>
+                <div class="table-container">
+                    <div class="table-header"><h3>🕐 Horaires</h3></div>
+                    <div style="padding:24px">
+                        ${['lundi','mardi','mercredi','jeudi','vendredi','samedi','dimanche'].map(d => `
+                            <div class="form-group"><label style="text-transform:capitalize">${d}</label><input name="hours.${d}" value="${esc(s['hours.' + d] || '')}" placeholder="ex: 12:00 - 23:00"></div>
+                        `).join('')}
+                    </div>
+                </div>
+                <div class="table-container">
+                    <div class="table-header"><h3>📱 Réseaux sociaux</h3></div>
+                    <div style="padding:24px">
+                        <div class="form-group"><label>Facebook</label><input name="social.facebook" value="${esc(s['social.facebook'] || '')}"></div>
+                        <div class="form-group"><label>Instagram</label><input name="social.instagram" value="${esc(s['social.instagram'] || '')}"></div>
+                        <div class="form-group"><label>Twitter / X</label><input name="social.twitter" value="${esc(s['social.twitter'] || '')}"></div>
+                        <div class="form-group"><label>Google Maps (URL embed)</label><textarea name="map.embed">${esc(s['map.embed'] || '')}</textarea></div>
+                    </div>
+                </div>
+            </div>
+            <div style="margin-top:24px;display:flex;justify-content:flex-end">
+                <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Enregistrer les paramètres</button>
+            </div>
+            </form>
+        `;
+        document.getElementById('settingsForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = e.target.querySelector('[type="submit"]');
+            btn.disabled = true;
+            try {
+                const f = new FormData(e.target);
+                const payload = {};
+                for (const [k, v] of f.entries()) payload[k] = v;
+                await api('/api/admin/settings', { method: 'PUT', body: JSON.stringify(payload) });
+                toast('Paramètres enregistrés');
+            } catch (err) { toast(err.message, 'error'); }
+            btn.disabled = false;
+        });
+    }
+
+    // ========== EVENT DELEGATION ==========
+    document.addEventListener('click', (e) => {
+        const editBtn = e.target.closest('.btn-edit-menu');
+        if (editBtn) {
+            try { showMenuModal(JSON.parse(editBtn.dataset.item)); } catch {}
+            return;
+        }
+        const deleteBtn = e.target.closest('.btn-delete-menu');
+        if (deleteBtn) { deleteMenu(parseInt(deleteBtn.dataset.id)); return; }
+
+        const confirmResBtn = e.target.closest('.btn-confirm-res');
+        if (confirmResBtn) {
+            updateReservation(
+                parseInt(confirmResBtn.dataset.id), 'confirmed',
+                confirmResBtn.dataset.phone, confirmResBtn.dataset.name,
+                confirmResBtn.dataset.date, confirmResBtn.dataset.time,
+                parseInt(confirmResBtn.dataset.guests)
+            );
+            return;
+        }
+        const cancelResBtn = e.target.closest('.btn-cancel-res');
+        if (cancelResBtn) {
+            updateReservation(
+                parseInt(cancelResBtn.dataset.id), 'cancelled',
+                cancelResBtn.dataset.phone, cancelResBtn.dataset.name,
+                cancelResBtn.dataset.date, cancelResBtn.dataset.time,
+                parseInt(cancelResBtn.dataset.guests)
+            );
+            return;
+        }
+        const deleteResBtn = e.target.closest('.btn-delete-res');
+        if (deleteResBtn) { deleteReservation(parseInt(deleteResBtn.dataset.id)); return; }
+
+        const confirmOrdBtn = e.target.closest('.btn-confirm-ord');
+        if (confirmOrdBtn) {
+            updateOrder(
+                parseInt(confirmOrdBtn.dataset.id), 'confirmed',
+                confirmOrdBtn.dataset.phone, confirmOrdBtn.dataset.items,
+                parseInt(confirmOrdBtn.dataset.total), confirmOrdBtn.dataset.name
+            );
+            return;
+        }
+        const cancelOrdBtn = e.target.closest('.btn-cancel-ord');
+        if (cancelOrdBtn) {
+            updateOrder(
+                parseInt(cancelOrdBtn.dataset.id), 'cancelled',
+                cancelOrdBtn.dataset.phone, cancelOrdBtn.dataset.items,
+                parseInt(cancelOrdBtn.dataset.total), cancelOrdBtn.dataset.name
+            );
+            return;
+        }
+        const completeOrdBtn = e.target.closest('.btn-complete-ord');
+        if (completeOrdBtn) {
+            updateOrder(
+                parseInt(completeOrdBtn.dataset.id), 'completed',
+                completeOrdBtn.dataset.phone, completeOrdBtn.dataset.items,
+                parseInt(completeOrdBtn.dataset.total), completeOrdBtn.dataset.name
+            );
+            return;
+        }
+        const deleteOrdBtn = e.target.closest('.btn-delete-ord');
+        if (deleteOrdBtn) { deleteOrder(parseInt(deleteOrdBtn.dataset.id)); return; }
+
+        const deleteGalBtn = e.target.closest('.btn-delete-gal');
+        if (deleteGalBtn) { deleteGallery(parseInt(deleteGalBtn.dataset.id)); return; }
+
+        const approveRevBtn = e.target.closest('.btn-approve-rev');
+        if (approveRevBtn) { updateReviewStatus(parseInt(approveRevBtn.dataset.id), 'approved'); return; }
+        const hideRevBtn = e.target.closest('.btn-hide-rev');
+        if (hideRevBtn) { updateReviewStatus(parseInt(hideRevBtn.dataset.id), 'hidden'); return; }
+        const deleteRevBtn = e.target.closest('.btn-delete-rev');
+        if (deleteRevBtn) { deleteReview(parseInt(deleteRevBtn.dataset.id)); return; }
+    });
 
     // ========== INIT ==========
     (async () => {

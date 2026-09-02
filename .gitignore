@@ -1,7 +1,8 @@
 node_modules/
-kaayleek.db
-uploads/
+db/resto.db
+db/resto.db-shm
+db/resto.db-wal
+public/uploads/
 *.log
 .DS_Store
-start.sh
 .env

@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="KaayLeek — Restaurant gastronomique d'exception à Dakar. Cuisine sénégalaise revisitée, art de la table et expérience culinaire unique." />
+  <title>KaayLeek · Restaurant Gastronomique</title>
+
+  <!-- Police display élégante : Cormorant Garamond. Sans-serif : Jost -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400;1,500&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/css/style.css" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>✦</text></svg>" />
+</head>
+<body>
+  <!-- Curseur personnalisé -->
+  <div class="cursor" aria-hidden="true"></div>
+  <div class="cursor-dot" aria-hidden="true"></div>
+
+  <!-- Barre de progression de lecture -->
+  <div class="scroll-progress" aria-hidden="true"></div>
+
+  <!-- Pré-chargeur élégant -->
+  <div class="preloader" id="preloader" aria-hidden="true">
+    <div class="preloader-inner">
+      <span class="preloader-logo">KaayLeek</span>
+      <div class="preloader-line"><span></span></div>
+    </div>
+  </div>
+
+  <!-- Toasts de notification -->
+  <div class="toast-container" id="toast-container"></div>
+
+  <!-- Navigation -->
+  <header class="site-header" id="siteHeader">
+    <nav class="nav container" aria-label="Navigation principale">
+      <a href="#/" class="nav-brand" aria-label="KaayLeek - Accueil">
+        <span class="brand-mark">K</span>
+        <span class="brand-text">KaayLeek</span>
+      </a>
+
+      <ul class="nav-links" id="navLinks">
+        <li><a href="#/" data-nav>Accueil</a></li>
+        <li><a href="#/menu" data-nav>Menu</a></li>
+        <li><a href="#/a-propos" data-nav>À propos</a></li>
+        <li><a href="#/galerie" data-nav>Galerie</a></li>
+        <li><a href="#/avis" data-nav>Avis</a></li>
+        <li><a href="#/contact" data-nav>Contact</a></li>
+      </ul>
+
+      <div class="nav-actions">
+        <button class="cart-link" id="cartBtn" onclick="Cart.toggle()" aria-label="Ouvrir le panier" title="Mon panier">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="9" cy="21" r="1.5"/><circle cx="19" cy="21" r="1.5"/><path d="M2 3h2l2.4 12.2a1.5 1.5 0 0 0 1.5 1.2h8.9a1.5 1.5 0 0 0 1.5-1.2L21 7H6"/></svg>
+          <span class="cart-badge" id="cartBadge">0</span>
+        </button>
+        <a href="#/reservation" class="btn btn-gold btn-sm nav-reserve" data-nav>Réserver</a>
+        <a href="#/compte" class="nav-acount-link" data-nav title="Mon compte">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+        </a>
+        <button class="nav-hamburger" id="navHamburger" aria-label="Ouvrir le menu">
+          <span></span><span></span><span></span>
+        </button>
+      </div>
+    </nav>
+  </header>
+
+  <!-- Conteneur des vues -->
+  <main id="app"></main>
+
+  <!-- Pied de page -->
+  <footer class="site-footer">
+    <div class="container footer-grid">
+      <div class="footer-brand">
+        <span class="brand-mark large">K</span>
+        <p class="footer-tagline">L'art de la table, sublimé par l'âme sénégalaise.</p>
+        <div class="footer-social" id="footerSocial"></div>
+      </div>
+      <div class="footer-col">
+        <h4>Navigation</h4>
+        <ul>
+          <li><a href="#/menu">Menu</a></li>
+          <li><a href="#/a-propos">À propos</a></li>
+          <li><a href="#/galerie">Galerie</a></li>
+          <li><a href="#/avis">Avis clients</a></li>
+          <li><a href="#/reservation">Réserver</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Contact</h4>
+        <ul id="footerContact">
+          <li class="footer-address"></li>
+          <li class="footer-phone"></li>
+          <li class="footer-email"></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Horaires</h4>
+        <ul class="footer-hours" id="footerHours"></ul>
+      </div>
+    </div>
+    <div class="footer-bottom container">
+      <p>© <span id="footerYear"></span> KaayLeek Restaurant. Tous droits réservés.</p>
+      <p>Conçu avec passion · Dakar, SENEGAL</p>
+    </div>
+  </footer>
+
+  <script src="/js/api.js"></script>
+  <script src="/js/components.js"></script>
+  <script src="/js/app.js"></script>
+</body>
+</html>
