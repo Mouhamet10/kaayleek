@@ -1,5 +1,4 @@
 node_modules/
-db/resto.db
 db/resto.db-shm
 db/resto.db-wal
 public/uploads/

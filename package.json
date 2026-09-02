@@ -4,14 +4,20 @@
   "description": "Site web haut de gamme pour restaurant - KaayLeek",
   "main": "server/index.js",
   "type": "commonjs",
+  "engines": {
+    "node": ">=20"
+  },
   "scripts": {
+    "prestart": "npm rebuild better-sqlite3",
     "start": "node server/index.js",
+    "predev": "npm rebuild better-sqlite3",
     "dev": "node --watch server/index.js",
     "seed": "node server/seed.js"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",
     "better-sqlite3": "^11.3.0",
+    "dotenv": "^17.4.2",
     "express": "^4.19.2",
     "jsonwebtoken": "^9.0.2",
     "multer": "^1.4.5-lts.1",

@@ -1,6 +1,8 @@
 // server/index.js
 // Point d'entrée du serveur Express.
 
+require('dotenv').config();
+
 const path = require('path');
 const express = require('express');
 const { db } = require('../db/database');
