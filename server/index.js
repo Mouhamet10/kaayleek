@@ -39,6 +39,10 @@ app.use('/api/upload', require('../routes/upload'));
 // Espace administration (fichiers statiques dans /admin)
 // ---------------------------------------------------------------
 const ADMIN_DIR = path.join(__dirname, '..', 'admin');
+// Page de connexion admin : sert login.html (et non le dashboard)
+app.get(['/admin/login', '/admin/login/'], (req, res) => {
+  res.sendFile(path.join(ADMIN_DIR, 'login.html'));
+});
 app.use('/admin', express.static(ADMIN_DIR));
 
 // Récupérer l'utilisateur connecté (pour le frontend, si token valide)
